@@ -1,6 +1,7 @@
-package com.b0c0.delayedQueue.base;
+package com.b0c0.common.delayedQueue.base;
 
-import com.b0c0.delayedQueue.GeneralDelayedQueue;
+
+import com.b0c0.common.delayedQueue.GeneralDelayedQueue;
 
 /**
  * @program: springbootdemo

@@ -61,6 +61,36 @@
 
 #### 0.0.2-SNAPSHOT: 
 * 添加延时队列(可自定义延时时间和失败重试-延时步长)
+    使用示例：
+```
+public class TestConsumer implements GeneralQueueConsumerable {
+
+
+    @Override
+    public boolean run(GeneralDelayedQueue task) {
+        String body = task.getBody();
+        String requestId = task.getRequestId();
+        int currExecuteNum = task.getCurrExecuteNum();
+        System.out.println("消费延时队列 requestId -> "+requestId+" ,第 -> "+currExecuteNum + 1+" 次,body -> "+body);
+        return true;
+    }
+
+    public static void main(String[] args) {
+
+        GeneralDelayedQueue delayedQueue = new GeneralDelayedQueue(
+                UUID.randomUUID().toString(),
+                "jsonbody",
+                4, 5, 5);
+
+        new GeneralDelayedQueueExecute(
+                new TestConsumer(),
+                delayedQueue,
+                DefaultRetryTimeTypeator.AdvanceStepTimeRetryTimeTypeator()).run();
+    }
+}
+```
+
+
 * 添加通用日志打印注解 @GeneralPrintAOP
 
     

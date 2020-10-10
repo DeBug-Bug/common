@@ -1,7 +1,7 @@
-package com.b0c0.delayedQueue;
+package com.b0c0.common.delayedQueue;
 
 
-import com.b0c0.delayedQueue.base.RetryTimeTypeable;
+import com.b0c0.common.delayedQueue.base.RetryTimeTypeable;
 
 import java.util.UUID;
 

@@ -1,4 +1,4 @@
-package com.b0c0.delayedQueue;
+package com.b0c0.common.delayedQueue;
 
 
 import java.util.concurrent.Delayed;

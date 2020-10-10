@@ -1,4 +1,4 @@
-package com.b0c0.log;
+package com.b0c0.common.log;
 
 import com.alibaba.fastjson.JSON;
 import org.aspectj.lang.ProceedingJoinPoint;
