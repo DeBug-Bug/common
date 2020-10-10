@@ -22,5 +22,10 @@ import com.b0c0.common.delayedQueue.GeneralDelayedQueue;
 
 public interface GeneralQueueConsumerable {
 
+    /**
+     * 开发者要进行执行的具体业务方法，开发者实现这个GeneralQueueConsumerable接口重写里面的run方法即可执行自己的业务逻辑。
+     * @param task
+     * @return false表示执行业务失败，如果设置了失败重试，则会根据重试机制进行重试，true表示执行成功
+     */
     boolean run(GeneralDelayedQueue task);
 }

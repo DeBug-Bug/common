@@ -22,8 +22,9 @@ import com.b0c0.common.delayedQueue.GeneralDelayedQueue;
 public interface RetryTimeTypeable {
     /**
      * 返回延时时间
+     * 开发者实现这个此接口重写里面的getTime方法即可根据具体需要进行定义重试机制延时时间。
      * @param task
-     * @return 返回此次的延时时间
+     * @return 返回此次的延时时间，单位和GeneralDelayedQueue构造方法中设置的时间单位一致（默认为秒）。
      */
     long getTime(GeneralDelayedQueue task);
 }

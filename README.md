@@ -31,6 +31,7 @@
 ```
 提示无法找到无法拉取的话，请在项目的pom.xml文件中添加如下：
 ```
+    <!-- 提示无法找到无法拉取的话，请在项目的pom.xml（和dependencies同级）文件中加入以下设置 -->
     <repositories>
         <repository>
             <snapshots>

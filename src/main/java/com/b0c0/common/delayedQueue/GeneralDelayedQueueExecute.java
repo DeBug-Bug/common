@@ -24,6 +24,11 @@ import java.util.concurrent.TimeUnit;
  * Copyright @ 李东升 2020. All rights reserved
  * ************************************************
  */
+
+/**
+ * 延时队列执行器就是调用的入口类，此类应该时储存一下延时队列实体以及具体的执行方法实体等，以及承担具体执行。
+ * 并且能够支持多线程调用，所以此类已经实现了Runnable接口，开发者可以根据需要来多线程调用或者直接同步调用。
+ */
 public class GeneralDelayedQueueExecute implements Runnable {
 
 

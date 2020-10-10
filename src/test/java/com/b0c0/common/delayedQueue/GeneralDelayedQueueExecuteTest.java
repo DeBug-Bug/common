@@ -5,7 +5,7 @@ import com.b0c0.common.delayedQueue.base.GeneralQueueConsumerable;
 
 import java.util.UUID;
 
-public class GeneralDelayedQueueExecuteTest{
+public class GeneralDelayedQueueExecuteTest {
 
     public static void main(String[] args) {
 
@@ -26,8 +26,8 @@ public class GeneralDelayedQueueExecuteTest{
             String body = task.getBody();
             String requestId = task.getRequestId();
             int currExecuteNum = task.getCurrExecuteNum();
-            System.out.println("消费延时队列 requestId -> "+requestId+" ,第 -> "+currExecuteNum + 1+" 次,body -> "+body);
-            return true;
+            System.out.println("消费延时队列 requestId -> " + requestId + " ,第 -> " + (currExecuteNum + 1) + " 次,body -> " + body);
+            return false;
         }
     }
 }
