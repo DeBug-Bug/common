@@ -17,10 +17,10 @@
  * ************************************************
  */
 
-# 使用说明
+# 常见问题说明
 
-## 1. 提示无法拉取SNAPSHOT版本
-如果是SNAPSHOT版本
+## 1. 无法拉取SNAPSHOT版本的问题
+如果是SNAPSHOT版本，具体说明请自行百度SNAPSHOT和release版本的区别
 如果确认版本号没有错的话，是0.0.2-SNAPSHOT版本：
 ```
     <dependency>
@@ -35,6 +35,8 @@
         <repository>
             <snapshots>
                 <enabled>true</enabled>
+                <!-- 保持总是拉取最新版本，即使版本一样也会覆盖已经存在的（如果作为稳定开发的话，建议将此值设置为never，
+                        如需要最新的时候可再将此值设置为always，再重新拉取。） -->
                 <updatePolicy>always</updatePolicy>
             </snapshots>
             <id>snapshots</id>
