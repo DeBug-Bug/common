@@ -21,7 +21,7 @@
 
 ## 1. 提示无法拉取SNAPSHOT版本
 如果是SNAPSHOT版本
-如果确认版本号没有错的话，例如是0.0.2-SNAPSHOT版本：
+如果确认版本号没有错的话，是0.0.2-SNAPSHOT版本：
 ```
     <dependency>
         <groupId>com.b0c0</groupId>
@@ -42,7 +42,7 @@
         </repository>
     </repositories>
 ```
-## 2. 关于@GeneralPrintAOP 不生效的问题
+## 2. 关于@GeneralPrintAOP 日志注解不生效的问题
 
 请在项目启动类上添加
 
@@ -57,8 +57,9 @@
 
 ### UPDATE LOG:
 
-#### 0.0.1: 已废弃 
-#### 0.0.2: 
+#### 最新开发版本：0.0.2-SNAPSHOT
+
+#### 0.0.2-SNAPSHOT: 
 * 添加延时队列(可自定义延时时间和失败重试-延时步长)
 * 添加通用日志打印注解 @GeneralPrintAOP
 
