@@ -16,9 +16,44 @@
  * Copyright @ 李东升 2020. All rights reserved
  * ************************************************
  */
- 
-# 基础包
 
+# 使用说明
+
+## 1. 提示无法拉取SNAPSHOT版本
+如果是SNAPSHOT版本
+如果确认版本号没有错的话，例如是0.0.2-SNAPSHOT版本：
+```
+    <dependency>
+        <groupId>com.b0c0</groupId>
+        <artifactId>common</artifactId>
+        <version>0.0.2-SNAPSHOT</version>
+    </dependency>
+```
+提示无法找到无法拉取的话，请在项目的pom.xml文件中添加如下：
+```
+    <repositories>
+        <repository>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+            <id>snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        </repository>
+    </repositories>
+```
+## 2. 关于@GeneralPrintAOP 不生效的问题
+
+请在项目启动类上添加
+
+```
+@ComponentScan( basePackages ={"其他","其他","com.b0c0.log"})
+```
+
+
+ 
+
+# 基础包
 
 ### UPDATE LOG:
 

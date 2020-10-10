@@ -69,13 +69,14 @@ public class GeneralDelayedQueueExecute implements Runnable {
 
     @Override
     public void run() {
+        boolean result = false;
         try {
-            consumer.run(queue.take());
+            result = consumer.run(queue.take());
             task.setLastTime(retryTimeTypeator.getTime(task));
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if (task.getCurrExecuteNum() < task.getMaxExecuteNum()) {
+            if (task.getCurrExecuteNum() < task.getMaxExecuteNum() - 1 && !result) {
                 task.setCurrExecuteNum(task.getCurrExecuteNum() + 1);
                 setExpireTime();
                 queue.offer(task);

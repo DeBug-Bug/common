@@ -27,7 +27,7 @@ public class GeneralDelayedQueue implements Delayed {
     private String requestId;
     //主题内容
     private String body;
-    //当前的执行次数
+    //当前的执行次数(可设置此值为maxExecuteNum来达到强制中断之后的重试执行)
     private int currExecuteNum;
     //最大执行次数 如果大于1 表示开启失败重试
     private int maxExecuteNum;
@@ -98,7 +98,7 @@ public class GeneralDelayedQueue implements Delayed {
      * @param retryTime     重试延时时间
      * @param timeUnit      时间单位
      */
-    public GeneralDelayedQueue(String requestId, String body, int maxExecuteNum, long delayedTime, long retryTime, TimeUnit timeUnit) {
+    public GeneralDelayedQueue(String requestId, String body, int maxExecuteNum, long delayedTime, long retryTime,TimeUnit timeUnit) {
         this.requestId = requestId;
         this.body = body;
         this.currExecuteNum = 0;
@@ -108,8 +108,9 @@ public class GeneralDelayedQueue implements Delayed {
         this.timeUnit = timeUnit;
     }
 
+
     /**
-     * 构造方法 默认时间单位秒
+     * 构造方法 默认时间单位秒,自动捕获异常
      *
      * @param requestId     唯一标识
      * @param body          主题内容
@@ -121,53 +122,6 @@ public class GeneralDelayedQueue implements Delayed {
         this(requestId, body, maxExecuteNum, delayedTime, retryTime, TimeUnit.SECONDS);
     }
 
-    /**
-     * 无重试时间的构造方法
-     *
-     * @param requestId     唯一标识
-     * @param body          主题内容
-     * @param maxExecuteNum 最大执行次数
-     * @param delayedTime   首次执行延时时间
-     * @param timeUnit      时间单位
-     */
-    public GeneralDelayedQueue(String requestId, String body, int maxExecuteNum, long delayedTime, TimeUnit timeUnit) {
-        this(requestId, body, maxExecuteNum, delayedTime, 0, timeUnit);
-    }
-
-    /**
-     * 无重试时间的构造方法 默认时间单位秒
-     *
-     * @param requestId     唯一标识
-     * @param body          主题内容
-     * @param maxExecuteNum 最大执行次数
-     * @param delayedTime   首次执行延时时间
-     */
-    public GeneralDelayedQueue(String requestId, String body, int maxExecuteNum, long delayedTime) {
-        this(requestId, body, maxExecuteNum, delayedTime, 0, TimeUnit.SECONDS);
-    }
-
-    /**
-     * 不进行重试的构造方法
-     *
-     * @param requestId   唯一标识
-     * @param body        主题内容
-     * @param delayedTime 首次执行延时时间
-     * @param timeUnit    时间单位
-     */
-    public GeneralDelayedQueue(String requestId, String body, long delayedTime, TimeUnit timeUnit) {
-        this(requestId, body, 0, delayedTime, 0, timeUnit);
-    }
-
-    /**
-     * 不进行重试的构造方法 默认时间单位秒
-     *
-     * @param requestId   唯一标识
-     * @param body        主题内容
-     * @param delayedTime 首次执行延时时间
-     */
-    public GeneralDelayedQueue(String requestId, String body, long delayedTime) {
-        this(requestId, body, 0, delayedTime, 0, TimeUnit.SECONDS);
-    }
 
     @Override
     public int compareTo(Delayed delayed) {
@@ -186,6 +140,7 @@ public class GeneralDelayedQueue implements Delayed {
     /**
      * 检测延迟任务是否到期
      * 如果返回的是负数则说明到期否则还没到期
+     *
      * @param unit
      * @return
      */
