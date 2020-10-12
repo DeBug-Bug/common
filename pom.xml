@@ -6,7 +6,7 @@
 
     <groupId>com.b0c0</groupId>
     <artifactId>common</artifactId>
-    <version>0.0.4-SNAPSHOT</version>
+    <version>0.0.4</version>
     <packaging>jar</packaging>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>b0c0 common</description>
@@ -24,14 +24,14 @@
     <dependencies>
         <!--AOP依赖，此依赖已包含AspectJ相关依赖包。-->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-aop</artifactId>
-            <version>2.0.6.RELEASE</version>
-        </dependency>
-        <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
             <version>1.2.73</version>
+        </dependency>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>1.9.2</version>
         </dependency>
     </dependencies>
 

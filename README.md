@@ -8,7 +8,7 @@
  * @updateAuthor: lidongsheng
  * @updateData: 2020-10-03 11:41
  * @updateContent:
- * @Version: 0.0.2
+ * @Version: 0.0.4
  * @email: lidongshenglife@163.com
  * @blog: https://www.b0c0.com
  * @csdn: https://blog.csdn.net/LDSWAN0
@@ -21,12 +21,12 @@
 
 ## 1. 无法拉取SNAPSHOT版本的问题
 如果是SNAPSHOT版本，具体说明请自行百度SNAPSHOT和release版本的区别
-如果确认版本号没有错的话，例如是0.0.4-SNAPSHOT版本：
+如果确认版本号没有错的话，例如是0.0.5-SNAPSHOT版本：
 ```
     <dependency>
         <groupId>com.b0c0</groupId>
         <artifactId>common</artifactId>
-        <version>0.0.4-SNAPSHOT</version>
+        <version>0.0.5-SNAPSHOT</version>
     </dependency>
 ```
 提示无法找到无法拉取的话，请在项目的pom.xml文件中添加如下：
@@ -50,7 +50,7 @@
 请在项目启动类上添加
 
 ```
-@ComponentScan( basePackages ={"其他","其他","com.b0c0.common.log"})
+@Import({a.class, b.class, GeneralPrintLogAspect.class})
 ```
 
 
@@ -60,13 +60,14 @@
 
 ### UPDATE LOG:
 
-#### 最新稳定版本：0.0.3
+#### 最新稳定版本：0.0.4
 
-#### 最新开发版本：0.0.4-SNAPSHOT
+#### 最新开发版本：0.0.5-SNAPSHOT
 
-#### 0.0.3: 
+#### 0.0.4: 
 * 添加延时队列(可自定义延时时间和失败重试-延时步长)
-    使用示例：
+
+使用示例：
 ```
 public class TestConsumer implements GeneralQueueConsumerable {
 
@@ -97,5 +98,10 @@ public class TestConsumer implements GeneralQueueConsumerable {
 
 
 * 添加通用日志打印注解 @GeneralPrintAOP
+
+使用此注解务必再项目启动类上加上
+```
+@Import({GeneralPrintLogAspect.class})
+```
 
     

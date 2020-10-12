@@ -7,14 +7,13 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -31,11 +30,10 @@ import java.util.UUID;
  * @csdn: https://blog.csdn.net/LDSWAN0
  */
 @Aspect
-@Component
 public class GeneralPrintLogAspect {
 
 
-    private static final Logger logger = LoggerFactory.getLogger(GeneralPrintLogAspect.class);
+    private static final Logger logger = Logger.getLogger(GeneralPrintLogAspect.class.getName());
 
     /**
      * 注解是拦截定义切入点，切入点为com.example.aop下的所有函数
@@ -89,11 +87,11 @@ public class GeneralPrintLogAspect {
             //调用执行目标方法并得到执行方法的返回值
             obj = joinPoint.proceed();
         } catch (Throwable throwable) {
-            logger.error("通用日志打印AOP uuid -> " + uuid + " 类名 -> {} 方法名 -> {} 执行出异常,异常信息：", className, methodName, throwable.toString());
+            logger.severe("通用日志打印AOP uuid -> " + uuid + " 类名 -> " + className + " 方法名 -> " + methodName + " 执行出异常,异常信息：" + throwable.toString());
             throwable.printStackTrace();
         }
         long endExecuteTime = System.currentTimeMillis();
-        logger.info("通用日志打印AOP uuid -> " + uuid + " 方法解释 -> {} 类名 -> {} 方法名 -> {} 执行完成，执行结果 -> {}，执行时间 -> {}", generalPrintLogAOP.value(), className, methodName, JSON.toJSONString(obj), (endExecuteTime - beginExecuteTime) + "ms");
+        logger.info("通用日志打印AOP uuid -> " + uuid + " 方法解释 -> " + generalPrintLogAOP.value() + " 类名 -> " + className + " 方法名 -> " + methodName + " 执行完成，执行结果 -> " + JSON.toJSONString(obj) + "，执行时间 -> " + (endExecuteTime - beginExecuteTime) + "ms");
         return obj;
     }
 

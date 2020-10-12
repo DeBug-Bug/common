@@ -19,6 +19,10 @@ import java.lang.annotation.*;
 @Target({ElementType.METHOD,ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
+/**
+ * 使用务必再项目启动类上加上
+ * @Import({GeneralPrintLogAspect.class})
+ */
 public @interface GeneralPrintLogAOP {
     /**
      * 说明信息
