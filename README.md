@@ -26,7 +26,7 @@
     <dependency>
         <groupId>com.b0c0</groupId>
         <artifactId>common</artifactId>
-        <version>0.0.2-SNAPSHOT</version>
+        <version>0.0.4-SNAPSHOT</version>
     </dependency>
 ```
 提示无法找到无法拉取的话，请在项目的pom.xml文件中添加如下：
@@ -60,9 +60,11 @@
 
 ### UPDATE LOG:
 
-#### 最新开发版本：0.0.2-SNAPSHOT
+#### 最新稳定版本：0.0.3
 
-#### 0.0.2-SNAPSHOT: 
+#### 最新开发版本：0.0.4-SNAPSHOT
+
+#### 0.0.3: 
 * 添加延时队列(可自定义延时时间和失败重试-延时步长)
     使用示例：
 ```
