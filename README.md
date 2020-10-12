@@ -21,7 +21,7 @@
 
 ## 1. 无法拉取SNAPSHOT版本的问题
 如果是SNAPSHOT版本，具体说明请自行百度SNAPSHOT和release版本的区别
-如果确认版本号没有错的话，是0.0.2-SNAPSHOT版本：
+如果确认版本号没有错的话，例如是0.0.4-SNAPSHOT版本：
 ```
     <dependency>
         <groupId>com.b0c0</groupId>
