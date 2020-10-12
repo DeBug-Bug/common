@@ -50,7 +50,7 @@
 请在项目启动类上添加
 
 ```
-@ComponentScan( basePackages ={"其他","其他","com.b0c0.log"})
+@ComponentScan( basePackages ={"其他","其他","com.b0c0.common.log"})
 ```
 
 
