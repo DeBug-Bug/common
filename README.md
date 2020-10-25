@@ -6,9 +6,9 @@
  * @author: lidongsheng
  * @createData: 2020-10-02 18:41
  * @updateAuthor: lidongsheng
- * @updateData: 2020-10-03 11:41
+ * @updateData: 2020-10-24 11:41
  * @updateContent:
- * @Version: 0.0.4
+ * @Version: 0.0.5
  * @email: lidongshenglife@163.com
  * @blog: https://www.b0c0.com
  * @csdn: https://blog.csdn.net/LDSWAN0
@@ -60,26 +60,20 @@
 
 ### UPDATE LOG:
 
-#### 最新稳定版本：0.0.4
+#### 最新稳定版本：0.0.5
 
-#### 最新开发版本：0.0.5-SNAPSHOT
+#### 最新开发版本：0.0.6-SNAPSHOT
 
 #### 0.0.4: 
 * 添加延时队列(可自定义延时时间和失败重试-延时步长)
+* 
+
+#### 0.0.5: 
+* 支持返回结果（同步异步）
 
 使用示例：
 ```
-public class TestConsumer implements GeneralQueueConsumerable {
-
-
-    @Override
-    public boolean run(GeneralDelayedQueue task) {
-        String body = task.getBody();
-        String requestId = task.getRequestId();
-        int currExecuteNum = task.getCurrExecuteNum();
-        System.out.println("消费延时队列 requestId -> "+requestId+" ,第 -> "+currExecuteNum + 1+" 次,body -> "+body);
-        return true;
-    }
+public class GeneralDelayedQueueExecuteTest {
 
     public static void main(String[] args) {
 
@@ -87,11 +81,26 @@ public class TestConsumer implements GeneralQueueConsumerable {
                 UUID.randomUUID().toString(),
                 "jsonbody",
                 4, 5, 5);
-
-        new GeneralDelayedQueueExecute(
+        GeneralDelayedQueueExecute delayedQueueExecute = new GeneralDelayedQueueExecute(
                 new TestConsumer(),
                 delayedQueue,
-                DefaultRetryTimeTypeator.AdvanceStepTimeRetryTimeTypeator()).run();
+                DefaultRetryTimeTypeator.FixDelayedRetryTimeTypeator());
+        delayedQueueExecute.run();
+        GeneralResult generalResult = delayedQueueExecute.getLastResult();
+        System.out.println(generalResult.getReslutData());
+
+    }
+
+    static class TestConsumer implements GeneralQueueConsumerable {
+
+        @Override
+        public GeneralResult<Integer> run(GeneralDelayedQueue task) {
+            String body = task.getBody();
+            String requestId = task.getRequestId();
+            int currExecuteNum = task.getCurrExecuteNum();
+            System.out.println("消费延时队列 requestId -> " + requestId + " ,第 -> " + (currExecuteNum + 1) + " 次,body -> " + body);
+            return GeneralResult.success(currExecuteNum + 1);
+        }
     }
 }
 ```

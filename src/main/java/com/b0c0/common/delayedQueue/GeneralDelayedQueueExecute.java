@@ -3,7 +3,11 @@ package com.b0c0.common.delayedQueue;
 
 import com.b0c0.common.delayedQueue.base.GeneralQueueConsumerable;
 import com.b0c0.common.delayedQueue.base.RetryTimeTypeable;
+import com.b0c0.common.utils.GeneralResult;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -44,19 +48,12 @@ public class GeneralDelayedQueueExecute implements Runnable {
     //重试时间的具体实现
     private RetryTimeTypeable retryTimeTypeator;
 
-    /**
-     * 构造方法(默认为FixDelayedRetryTimeTypeator延时重试方法)
-     *
-     * @param consumer 具体的消费者
-     * @param task     延时队列实体
-     */
-    public GeneralDelayedQueueExecute(GeneralQueueConsumerable consumer, GeneralDelayedQueue task) {
-        this.consumer = consumer;
-        this.task = task;
-        this.retryTimeTypeator = DefaultRetryTimeTypeator.FixDelayedRetryTimeTypeator();
-        setExpireTime();
-        queue.offer(task);
-    }
+    //用来保证程序执行完成之后才能获取到执行结果
+    private CountDownLatch countDownLatch;
+
+    //存储每次执行的具体结果信息
+    private List<GeneralResult> resultList = new ArrayList<>();
+
 
     /**
      * 构造方法
@@ -68,20 +65,34 @@ public class GeneralDelayedQueueExecute implements Runnable {
         this.consumer = consumer;
         this.task = task;
         this.retryTimeTypeator = retryTimeTypeator;
+        countDownLatch = new CountDownLatch(task.getMaxExecuteNum());
         setExpireTime();
         queue.offer(task);
     }
 
+    /**
+     * 构造方法(默认为FixDelayedRetryTimeTypeator延时重试方法)
+     *
+     * @param consumer 具体的消费者
+     * @param task     延时队列实体
+     */
+    public GeneralDelayedQueueExecute(GeneralQueueConsumerable consumer, GeneralDelayedQueue task) {
+        this(consumer, task, DefaultRetryTimeTypeator.FixDelayedRetryTimeTypeator());
+    }
+
     @Override
     public void run() {
-        boolean result = false;
+        GeneralResult result = GeneralResult.fail("40000", "调用失败");
         try {
             result = consumer.run(queue.take());
             task.setLastTime(retryTimeTypeator.getTime(task));
+            //添加执行结果
+            resultList.add(result);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if (task.getCurrExecuteNum() < task.getMaxExecuteNum() - 1 && !result) {
+            countDownLatch.countDown();
+            if (task.getCurrExecuteNum() < task.getMaxExecuteNum() - 1 && !result.isSuccess()) {
                 task.setCurrExecuteNum(task.getCurrExecuteNum() + 1);
                 setExpireTime();
                 queue.offer(task);
@@ -102,4 +113,37 @@ public class GeneralDelayedQueueExecute implements Runnable {
         task.setExpireTime(expireTime);
     }
 
+    /**
+     * 得到执行结果
+     *
+     * @param fastReturn 立即返回 true 代表立即返回， false 代表必须等到最大执行次数后返回（list.size = maxExecuteNum）
+     * @return 执行结果列表
+     */
+    public List<GeneralResult> getResultList(boolean fastReturn) {
+        try {
+            if (!fastReturn) {
+                countDownLatch.await();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return resultList;
+    }
+
+    /**
+     * 得到最后一次的执行结果(一定能保证获取到结果)
+     *
+     * @return
+     */
+    public GeneralResult getLastResult() {
+        try {
+            //保证一定至少执行完成过一次
+            if (countDownLatch.getCount() == task.getMaxExecuteNum()) {
+                countDownLatch.await();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return resultList.get(resultList.size() - 1);
+    }
 }

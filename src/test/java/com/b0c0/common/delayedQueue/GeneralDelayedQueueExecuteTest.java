@@ -2,6 +2,7 @@ package com.b0c0.common.delayedQueue;
 
 
 import com.b0c0.common.delayedQueue.base.GeneralQueueConsumerable;
+import com.b0c0.common.utils.GeneralResult;
 
 import java.util.UUID;
 
@@ -13,21 +14,25 @@ public class GeneralDelayedQueueExecuteTest {
                 UUID.randomUUID().toString(),
                 "jsonbody",
                 4, 5, 5);
-        new GeneralDelayedQueueExecute(
+        GeneralDelayedQueueExecute delayedQueueExecute = new GeneralDelayedQueueExecute(
                 new TestConsumer(),
                 delayedQueue,
-                DefaultRetryTimeTypeator.AdvanceStepTimeRetryTimeTypeator()).run();
+                DefaultRetryTimeTypeator.FixDelayedRetryTimeTypeator());
+        delayedQueueExecute.run();
+        GeneralResult generalResult = delayedQueueExecute.getLastResult();
+        System.out.println(generalResult.getReslutData());
+
     }
 
     static class TestConsumer implements GeneralQueueConsumerable {
 
         @Override
-        public boolean run(GeneralDelayedQueue task) {
+        public GeneralResult<Integer> run(GeneralDelayedQueue task) {
             String body = task.getBody();
             String requestId = task.getRequestId();
             int currExecuteNum = task.getCurrExecuteNum();
             System.out.println("消费延时队列 requestId -> " + requestId + " ,第 -> " + (currExecuteNum + 1) + " 次,body -> " + body);
-            return false;
+            return GeneralResult.success(currExecuteNum + 1);
         }
     }
 }

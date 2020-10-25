@@ -2,6 +2,7 @@ package com.b0c0.common.delayedQueue.base;
 
 
 import com.b0c0.common.delayedQueue.GeneralDelayedQueue;
+import com.b0c0.common.utils.GeneralResult;
 
 /**
  * @program: springbootdemo
@@ -27,5 +28,5 @@ public interface GeneralQueueConsumerable {
      * @param task
      * @return false表示执行业务失败，如果设置了失败重试，则会根据重试机制进行重试，true表示执行成功
      */
-    boolean run(GeneralDelayedQueue task);
+    GeneralResult run(GeneralDelayedQueue task);
 }
