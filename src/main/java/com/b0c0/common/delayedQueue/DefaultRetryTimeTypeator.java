@@ -4,6 +4,7 @@ package com.b0c0.common.delayedQueue;
 import com.b0c0.common.delayedQueue.base.RetryTimeTypeable;
 
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @program: springbootdemo
@@ -120,8 +121,8 @@ public class DefaultRetryTimeTypeator {
         GeneralDelayedQueue delayedQueue = new GeneralDelayedQueue(
                 UUID.randomUUID().toString(),
                 null,
-                50, 5, 5);
-        for (int i = 0; i < 40; i++) {
+                8, 0, 150,TimeUnit.MILLISECONDS);
+        for (int i = 0; i < 8; i++) {
             delayedQueue.setCurrExecuteNum(i);
             long time = retryTimeTypeator.getTime(delayedQueue);
             delayedQueue.setLastTime(time);

@@ -82,7 +82,7 @@ public class GeneralDelayedQueueExecute implements Runnable {
 
     @Override
     public void run() {
-        GeneralResult result = GeneralResult.fail("40000", "调用失败");
+        GeneralResult result = GeneralResult.fail();
         try {
             result = consumer.run(queue.take());
             task.setLastTime(retryTimeTypeator.getTime(task));
@@ -97,6 +97,10 @@ public class GeneralDelayedQueueExecute implements Runnable {
                 setExpireTime();
                 queue.offer(task);
                 this.run();
+            } else {
+                while ((countDownLatch.getCount()) > 0) {
+                    countDownLatch.countDown();
+                }
             }
         }
     }
@@ -124,14 +128,15 @@ public class GeneralDelayedQueueExecute implements Runnable {
             if (!fastReturn) {
                 countDownLatch.await();
             }
+            return resultList;
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return resultList;
+        return null;
     }
 
     /**
-     * 得到最后一次的执行结果(一定能保证获取到结果)
+     * 得到上一次的执行结果(一定能保证获取到结果)
      *
      * @return
      */
@@ -141,9 +146,47 @@ public class GeneralDelayedQueueExecute implements Runnable {
             if (countDownLatch.getCount() == task.getMaxExecuteNum()) {
                 countDownLatch.await();
             }
+            return resultList.get(resultList.size() - 1);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return resultList.get(resultList.size() - 1);
+        return GeneralResult.fail();
     }
+
+    /**
+     * 得到最终一次的执行结果
+     *
+     * @return
+     */
+    public GeneralResult getFinalResult() {
+        try {
+            countDownLatch.await();
+            return resultList.get(resultList.size() - 1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return GeneralResult.fail();
+    }
+
+    /**
+     * 得到最终一次的执行结果 超时时间
+     *
+     * @param timeOut  超时时间
+     * @param timeUnit 时间单位
+     * @return
+     */
+    public GeneralResult getFinalResult(long timeOut, TimeUnit timeUnit) {
+        try {
+            countDownLatch.await(timeOut, timeUnit);
+            if (countDownLatch.getCount() == 0) {
+                return resultList.get(resultList.size() - 1);
+            }else {
+                return GeneralResult.fail("40001","执行超时，剩余任务正在执行中，无法获取最终执行结果");
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return GeneralResult.fail();
+    }
+
 }
