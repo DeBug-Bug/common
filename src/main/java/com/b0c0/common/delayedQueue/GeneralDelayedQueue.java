@@ -1,6 +1,8 @@
 package com.b0c0.common.delayedQueue;
 
 
+import com.b0c0.common.delayedQueue.base.GeneralQueueConsumerable;
+
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 
@@ -43,6 +45,7 @@ public class GeneralDelayedQueue implements Delayed {
     //时间单位
     private TimeUnit timeUnit;
 
+    private GeneralQueueConsumerable consumerable;
 
     public String getRequestId() {
         return requestId;
@@ -88,6 +91,14 @@ public class GeneralDelayedQueue implements Delayed {
         return timeUnit;
     }
 
+    public GeneralQueueConsumerable getConsumerable() {
+        return consumerable;
+    }
+
+    public void setConsumerable(GeneralQueueConsumerable consumerable) {
+        this.consumerable = consumerable;
+    }
+
     /**
      * 完整参数的构造方法
      *
@@ -98,7 +109,8 @@ public class GeneralDelayedQueue implements Delayed {
      * @param retryTime     重试延时时间
      * @param timeUnit      时间单位
      */
-    public GeneralDelayedQueue(String requestId, String body, int maxExecuteNum, long delayedTime, long retryTime,TimeUnit timeUnit) {
+    public GeneralDelayedQueue(GeneralQueueConsumerable consumerable,String requestId, String body, int maxExecuteNum, long delayedTime, long retryTime,TimeUnit timeUnit) {
+        this.consumerable = consumerable;
         this.requestId = requestId;
         this.body = body;
         this.currExecuteNum = 0;
@@ -118,8 +130,8 @@ public class GeneralDelayedQueue implements Delayed {
      * @param delayedTime   首次执行延时时间
      * @param retryTime     重试延时时间
      */
-    public GeneralDelayedQueue(String requestId, String body, int maxExecuteNum, long delayedTime, long retryTime) {
-        this(requestId, body, maxExecuteNum, delayedTime, retryTime, TimeUnit.SECONDS);
+    public GeneralDelayedQueue(GeneralQueueConsumerable consumerable,String requestId, String body, int maxExecuteNum, long delayedTime, long retryTime) {
+        this(consumerable,requestId, body, maxExecuteNum, delayedTime, retryTime, TimeUnit.SECONDS);
     }
 
 

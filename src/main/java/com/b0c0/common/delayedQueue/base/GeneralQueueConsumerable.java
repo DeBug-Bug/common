@@ -28,5 +28,5 @@ public interface GeneralQueueConsumerable {
      * @param task
      * @return false表示执行业务失败，如果设置了失败重试，则会根据重试机制进行重试，true表示执行成功
      */
-    GeneralResult run(GeneralDelayedQueue task);
+    <T>GeneralResult<T> run(GeneralDelayedQueue task);
 }

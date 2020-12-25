@@ -116,17 +116,17 @@ public class DefaultRetryTimeTypeator {
         }
     }
 
-    public static void main(String[] args) {
-        AdvanceStepTimeRetryTimeTypeator retryTimeTypeator = new AdvanceStepTimeRetryTimeTypeator();
-        GeneralDelayedQueue delayedQueue = new GeneralDelayedQueue(
-                UUID.randomUUID().toString(),
-                null,
-                8, 0, 150,TimeUnit.MILLISECONDS);
-        for (int i = 0; i < 8; i++) {
-            delayedQueue.setCurrExecuteNum(i);
-            long time = retryTimeTypeator.getTime(delayedQueue);
-            delayedQueue.setLastTime(time);
-            System.out.println(time);
-        }
-    }
+//    public static void main(String[] args) {
+//        AdvanceStepTimeRetryTimeTypeator retryTimeTypeator = new AdvanceStepTimeRetryTimeTypeator();
+//        GeneralDelayedQueue delayedQueue = new GeneralDelayedQueue(
+//                UUID.randomUUID().toString(),
+//                null,
+//                8, 0, 150,TimeUnit.MILLISECONDS);
+//        for (int i = 0; i < 8; i++) {
+//            delayedQueue.setCurrExecuteNum(i);
+//            long time = retryTimeTypeator.getTime(delayedQueue);
+//            delayedQueue.setLastTime(time);
+//            System.out.println(time);
+//        }
+//    }
 }

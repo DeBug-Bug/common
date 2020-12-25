@@ -6,6 +6,7 @@ import com.b0c0.common.log.GeneralPrintLogAspect;
 import com.b0c0.common.utils.GeneralResult;
 
 import java.util.UUID;
+import java.util.concurrent.DelayQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -15,18 +16,20 @@ public class GeneralDelayedQueueExecuteTest {
 
     public static void main(String[] args) {
 
-        GeneralDelayedQueue delayedQueue = new GeneralDelayedQueue(
-                UUID.randomUUID().toString(),
-                "jsonbody",
-                4, 0, 200, TimeUnit.MILLISECONDS);
-        GeneralDelayedQueueExecute delayedQueueExecute = new GeneralDelayedQueueExecute(
-                new TestConsumer(),
-                delayedQueue,
-                DefaultRetryTimeTypeator.AdvanceStepTimeRetryTimeTypeator());
-        delayedQueueExecute.run();
-        GeneralResult generalResult = delayedQueueExecute.getFinalResult();
-        System.out.println(generalResult.getReslutData());
+//        GeneralDelayedQueue delayedQueue = new GeneralDelayedQueue(
+//                UUID.randomUUID().toString(),
+//                "jsonbody",
+//                4, 0, 200, TimeUnit.MILLISECONDS);
+//        GeneralDelayedQueueExecute delayedQueueExecute = new GeneralDelayedQueueExecute(
+//                new TestConsumer(),
+//                delayedQueue,
+//                DefaultRetryTimeTypeator.AdvanceStepTimeRetryTimeTypeator());
+//        delayedQueueExecute.run();
+//        GeneralResult generalResult = delayedQueueExecute.getFinalResult();
+//        System.out.println(generalResult.getReslutData());
 
+//        DelayQueue<GeneralDelayedQueue> queue = new DelayQueue<>();
+//        queue.put();
     }
 
     static class TestConsumer implements GeneralQueueConsumerable {
