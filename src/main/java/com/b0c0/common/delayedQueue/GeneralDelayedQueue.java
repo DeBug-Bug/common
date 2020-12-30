@@ -25,30 +25,55 @@ import java.util.concurrent.TimeUnit;
  */
 public class GeneralDelayedQueue implements Delayed {
 
-    // 每次请求的唯一id
-    private String requestId;
-    //主题内容
+    //任务的唯一id
+    private String id;
+    //任务的自定义数据体
     private String body;
-    //当前的执行次数(可设置此值为maxExecuteNum来达到强制中断之后的重试执行)
+    /**
+     * 任务当前的执行次数(可设置此值为maxExecuteNum来达到强制中断之后的重试执行)
+     *
+     */
     private int currExecuteNum;
-    //最大执行次数 如果大于1 表示开启失败重试
+    /**
+     * 最大执行次数
+     * 此值为1 表示只执行一次，不开启重发
+     * 此值大于1 表示开启重发，并且此值为最大执行次数（包含首次执行）。
+     */
     private int maxExecuteNum;
-    //延时时间
-    private long delayedTime;
-    //重试时间
-    private long retryTime;
-    //过期时间
-    private long expireTime;
-    //上次的延时时间
-    private long lastTime = -1;
 
-    //时间单位
+    /**
+     * 任务的首次执行的延时时间，只有任务的首次执行时会用到此值进行延时执行
+     */
+    private long delayedTime;
+
+    /**
+     * 任务的重发延时时间，重发自定义延时策略会用到此值
+     */
+    private long retryTime;
+    /**
+     * 任务的过期时间,任务到达了过期时间就会执行
+     * 检测延迟任务是否到期
+     */
+    private long expireTime;
+    /**
+     * 上次的延时时间
+     */
+    private long lastTime = -1;
+    /**
+     * 时间单位
+     */
     private TimeUnit timeUnit;
+
+    /**
+     * 执行结果一直保存,可在执行器中随时获取，直至开发人员手动调用删除
+     * 注意：如果调用的执行器的异步执行，要想得到结果，需将此值设置为true，否则异步执行完将立即删除
+     */
+    private boolean keepResults;
 
     private GeneralQueueConsumerable consumerable;
 
-    public String getRequestId() {
-        return requestId;
+    public String getId() {
+        return id;
     }
 
     public String getBody() {
@@ -99,20 +124,26 @@ public class GeneralDelayedQueue implements Delayed {
         this.consumerable = consumerable;
     }
 
+    public boolean isKeepResults() {
+        return keepResults;
+    }
+
     /**
      * 完整参数的构造方法
      *
-     * @param requestId     唯一标识
+     * @param id     唯一标识
      * @param body          主题内容
+     * @param keepResults   执行结果一直保存,可在执行器中随时获取，直至开发人员手动调用删除,zhuyi
      * @param maxExecuteNum 最大执行次数
      * @param delayedTime   首次执行延时时间
      * @param retryTime     重试延时时间
      * @param timeUnit      时间单位
      */
-    public GeneralDelayedQueue(GeneralQueueConsumerable consumerable,String requestId, String body, int maxExecuteNum, long delayedTime, long retryTime,TimeUnit timeUnit) {
+    public GeneralDelayedQueue(GeneralQueueConsumerable consumerable,String id, String body,boolean keepResults, int maxExecuteNum, long delayedTime, long retryTime,TimeUnit timeUnit) {
         this.consumerable = consumerable;
-        this.requestId = requestId;
+        this.id = id;
         this.body = body;
+        this.keepResults = keepResults;
         this.currExecuteNum = 0;
         this.maxExecuteNum = maxExecuteNum;
         this.delayedTime = delayedTime;
@@ -124,14 +155,14 @@ public class GeneralDelayedQueue implements Delayed {
     /**
      * 构造方法 默认时间单位秒,自动捕获异常
      *
-     * @param requestId     唯一标识
+     * @param id     唯一标识
      * @param body          主题内容
      * @param maxExecuteNum 最大执行次数
      * @param delayedTime   首次执行延时时间
      * @param retryTime     重试延时时间
      */
-    public GeneralDelayedQueue(GeneralQueueConsumerable consumerable,String requestId, String body, int maxExecuteNum, long delayedTime, long retryTime) {
-        this(consumerable,requestId, body, maxExecuteNum, delayedTime, retryTime, TimeUnit.SECONDS);
+    public GeneralDelayedQueue(GeneralQueueConsumerable consumerable,String id, String body, int maxExecuteNum, long delayedTime, long retryTime) {
+        this(consumerable,id, body,false, maxExecuteNum, delayedTime, retryTime, TimeUnit.MILLISECONDS);
     }
 
 

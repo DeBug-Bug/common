@@ -52,7 +52,7 @@ public class GeneralDelayedQueueExecute implements Runnable {
     private CountDownLatch countDownLatch;
 
     //存储每次执行的具体结果信息
-    private List<GeneralResult> resultList = new ArrayList<>();
+    private List resultList = new ArrayList<>();
 
 
     /**
@@ -123,7 +123,7 @@ public class GeneralDelayedQueueExecute implements Runnable {
      * @param fastReturn 立即返回 true 代表立即返回， false 代表必须等到最大执行次数后返回（list.size = maxExecuteNum）
      * @return 执行结果列表
      */
-    public List<GeneralResult> getResultList(boolean fastReturn) {
+    public <T>List<GeneralResult<T>> getResultList(boolean fastReturn) {
         try {
             if (!fastReturn) {
                 countDownLatch.await();
@@ -140,13 +140,13 @@ public class GeneralDelayedQueueExecute implements Runnable {
      *
      * @return
      */
-    public GeneralResult getLastResult() {
+    public <T>GeneralResult<T> getLastResult() {
         try {
             //保证一定至少执行完成过一次
             if (countDownLatch.getCount() == task.getMaxExecuteNum()) {
                 countDownLatch.await();
             }
-            return resultList.get(resultList.size() - 1);
+            return (GeneralResult<T>) resultList.get(resultList.size() - 1);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -158,10 +158,10 @@ public class GeneralDelayedQueueExecute implements Runnable {
      *
      * @return
      */
-    public GeneralResult getFinalResult() {
+    public <T>GeneralResult<T> getFinalResult() {
         try {
             countDownLatch.await();
-            return resultList.get(resultList.size() - 1);
+            return (GeneralResult<T>) resultList.get(resultList.size() - 1);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -175,11 +175,11 @@ public class GeneralDelayedQueueExecute implements Runnable {
      * @param timeUnit 时间单位
      * @return
      */
-    public GeneralResult getFinalResult(long timeOut, TimeUnit timeUnit) {
+    public <T>GeneralResult<T> getFinalResult(long timeOut, TimeUnit timeUnit) {
         try {
             countDownLatch.await(timeOut, timeUnit);
             if (countDownLatch.getCount() == 0) {
-                return resultList.get(resultList.size() - 1);
+                return (GeneralResult<T>) resultList.get(resultList.size() - 1);
             }else {
                 return GeneralResult.fail("40001","执行超时，剩余任务正在执行中，无法获取最终执行结果");
             }

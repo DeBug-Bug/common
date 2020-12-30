@@ -2,7 +2,6 @@ package com.b0c0.common.delayedQueue;
 
 
 import com.b0c0.common.delayedQueue.base.GeneralQueueConsumerable;
-import com.b0c0.common.log.GeneralPrintLogAspect;
 import com.b0c0.common.utils.GeneralResult;
 
 import java.util.UUID;
@@ -16,20 +15,18 @@ public class GeneralDelayedQueueExecuteTest {
 
     public static void main(String[] args) {
 
-//        GeneralDelayedQueue delayedQueue = new GeneralDelayedQueue(
-//                UUID.randomUUID().toString(),
-//                "jsonbody",
-//                4, 0, 200, TimeUnit.MILLISECONDS);
-//        GeneralDelayedQueueExecute delayedQueueExecute = new GeneralDelayedQueueExecute(
-//                new TestConsumer(),
-//                delayedQueue,
-//                DefaultRetryTimeTypeator.AdvanceStepTimeRetryTimeTypeator());
-//        delayedQueueExecute.run();
-//        GeneralResult generalResult = delayedQueueExecute.getFinalResult();
-//        System.out.println(generalResult.getReslutData());
-
-//        DelayQueue<GeneralDelayedQueue> queue = new DelayQueue<>();
-//        queue.put();
+        GeneralDelayedQueue delayedQueue = new GeneralDelayedQueue(
+                null,
+                UUID.randomUUID().toString(),
+                "jsonbody",
+                4, 20, 5);
+        GeneralDelayedQueueExecute delayedQueueExecute = new GeneralDelayedQueueExecute(
+                new TestConsumer(),
+                delayedQueue,
+                DefaultRetryTimeTypeator.AdvanceStepTimeRetryTimeTypeator());
+        delayedQueueExecute.run();
+        GeneralResult generalResult = delayedQueueExecute.getFinalResult();
+        System.out.println(generalResult.getReslutData());
     }
 
     static class TestConsumer implements GeneralQueueConsumerable {
@@ -37,7 +34,7 @@ public class GeneralDelayedQueueExecuteTest {
         @Override
         public GeneralResult<Integer> run(GeneralDelayedQueue task) {
             String body = task.getBody();
-            String requestId = task.getRequestId();
+            String requestId = task.getId();
             int currExecuteNum = task.getCurrExecuteNum();
             logger.info("time ->"+System.currentTimeMillis()+" 消费延时队列 requestId -> " + requestId + " ,第 -> " + (currExecuteNum + 1) + " 次,body -> " + body);
 //            return GeneralResult.success(currExecuteNum + 1);

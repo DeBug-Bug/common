@@ -26,7 +26,7 @@ public interface GeneralQueueConsumerable {
     /**
      * 开发者要进行执行的具体业务方法，开发者实现这个GeneralQueueConsumerable接口重写里面的run方法即可执行自己的业务逻辑。
      * @param task
-     * @return false表示执行业务失败，如果设置了失败重试，则会根据重试机制进行重试，true表示执行成功
+     * @return 返回false根据重发的策略进行重发执行方法，如果设置了自定义的重发，则会根据重试机制进行重试，true表示执行结束。
      */
     <T>GeneralResult<T> run(GeneralDelayedQueue task);
 }

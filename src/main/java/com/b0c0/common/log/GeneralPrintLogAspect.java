@@ -80,7 +80,11 @@ public class GeneralPrintLogAspect {
             sb.append(" " + parameterNames[i] + " -> ");
             sb.append(JSON.toJSONString(args[i]) + ",");
         }
-        logger.info(sb.toString());
+        if (sb.length() > generalPrintLogAOP.maxLogLength()) {
+            logger.info(sb.substring(0, sb.length() - 1));
+        } else {
+            logger.info(sb.toString());
+        }
         long beginExecuteTime = System.currentTimeMillis();
         Object obj = null;
         try {
@@ -91,7 +95,11 @@ public class GeneralPrintLogAspect {
             throwable.printStackTrace();
         }
         long endExecuteTime = System.currentTimeMillis();
-        logger.info("通用日志打印AOP uuid -> " + uuid + " 方法解释 -> " + generalPrintLogAOP.value() + " 类名 -> " + className + " 方法名 -> " + methodName + " 执行完成，执行结果 -> " + JSON.toJSONString(obj) + "，执行时间 -> " + (endExecuteTime - beginExecuteTime) + "ms");
+        if (sb.length() > generalPrintLogAOP.maxLogLength()) {
+            logger.info("通用日志打印AOP uuid -> " + uuid + " 方法解释 -> " + generalPrintLogAOP.value() + " 类名 -> " + className + " 方法名 -> " + methodName + " 执行完成，执行结果 -> " + JSON.toJSONString(obj).substring(0, sb.length() - 1) + "，执行时间 -> " + (endExecuteTime - beginExecuteTime) + "ms");
+        } else {
+            logger.info("通用日志打印AOP uuid -> " + uuid + " 方法解释 -> " + generalPrintLogAOP.value() + " 类名 -> " + className + " 方法名 -> " + methodName + " 执行完成，执行结果 -> " + JSON.toJSONString(obj) + "，执行时间 -> " + (endExecuteTime - beginExecuteTime) + "ms");
+        }
         return obj;
     }
 
