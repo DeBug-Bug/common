@@ -35,7 +35,7 @@ public class GeneralDelayedQueue<T> implements Delayed {
         /**
          * 如果为任务链任务，上一个任务的执行结果会保存到这里，
          */
-        private String preResult;
+        private Object preResult;
 
         public T getBody() {
             return body;
@@ -45,11 +45,11 @@ public class GeneralDelayedQueue<T> implements Delayed {
             this.body = body;
         }
 
-        public String getPreResult() {
+        public Object getPreResult() {
             return preResult;
         }
 
-        protected void setPreResult(String preResult) {
+        protected void setPreResult(Object preResult) {
             this.preResult = preResult;
         }
     }
@@ -97,7 +97,7 @@ public class GeneralDelayedQueue<T> implements Delayed {
 
     /**
      * 执行结果一直保存,可在执行器中随时获取，直至开发人员手动调用删除
-     * 注意：如果调用的执行器的异步执行，要想得到结果，需将此值设置为true，否则异步执行完将立即删除
+     * 注意：如果设置为true了，请务必手动调用GeneralDelayedQueueExecute.clearTask 进行删除。否则任务相关信息将一直存在于内存中
      */
     private boolean keepResults;
 
