@@ -23,12 +23,43 @@ import java.util.concurrent.TimeUnit;
  * Copyright @ 李东升 2020. All rights reserved
  * ************************************************
  */
-public class GeneralDelayedQueue implements Delayed {
+public class GeneralDelayedQueue<T> implements Delayed {
+
+
+    public static class BodyData<T>{
+        /**
+         * 开发者自定义的需要的数据体 必须为JSON字符串格式。
+         */
+        private T body;
+
+        /**
+         * 如果为任务链任务，上一个任务的执行结果会保存到这里，
+         */
+        private String preResult;
+
+        public T getBody() {
+            return body;
+        }
+
+        protected void setBody(T body) {
+            this.body = body;
+        }
+
+        public String getPreResult() {
+            return preResult;
+        }
+
+        protected void setPreResult(String preResult) {
+            this.preResult = preResult;
+        }
+    }
 
     //任务的唯一id
     private String id;
-    //任务的自定义数据体
-    private String body;
+    /**
+     * 任务的自定义数据体
+     */
+    private BodyData<T> bodyData;
     /**
      * 任务当前的执行次数(可设置此值为maxExecuteNum来达到强制中断之后的重试执行)
      *
@@ -76,8 +107,14 @@ public class GeneralDelayedQueue implements Delayed {
         return id;
     }
 
-    public String getBody() {
-        return body;
+    public BodyData<T> getBodyData() {
+        return bodyData;
+    }
+
+    public static<T> BodyData<T> initBodyData(T userData) {
+        BodyData<T> bodyData= new BodyData<>();
+        bodyData.setBody(userData);
+        return bodyData;
     }
 
     public int getCurrExecuteNum() {
@@ -132,23 +169,24 @@ public class GeneralDelayedQueue implements Delayed {
      * 完整参数的构造方法
      *
      * @param id     唯一标识
-     * @param body          主题内容
+     * @param userData      主题内容
      * @param keepResults   执行结果一直保存,可在执行器中随时获取，直至开发人员手动调用删除,zhuyi
      * @param maxExecuteNum 最大执行次数
      * @param delayedTime   首次执行延时时间
      * @param retryTime     重试延时时间
      * @param timeUnit      时间单位
      */
-    public GeneralDelayedQueue(GeneralQueueConsumerable consumerable,String id, String body,boolean keepResults, int maxExecuteNum, long delayedTime, long retryTime,TimeUnit timeUnit) {
+    public GeneralDelayedQueue(GeneralQueueConsumerable consumerable,String id, T userData,boolean keepResults, int maxExecuteNum, long delayedTime, long retryTime,TimeUnit timeUnit) {
         this.consumerable = consumerable;
         this.id = id;
-        this.body = body;
+        this.bodyData = initBodyData(userData);
         this.keepResults = keepResults;
         this.currExecuteNum = 0;
         this.maxExecuteNum = maxExecuteNum;
         this.delayedTime = delayedTime;
         this.retryTime = retryTime;
         this.timeUnit = timeUnit;
+
     }
 
 
@@ -156,13 +194,13 @@ public class GeneralDelayedQueue implements Delayed {
      * 构造方法 默认时间单位秒,自动捕获异常
      *
      * @param id     唯一标识
-     * @param body          主题内容
+     * @param userData      主题内容
      * @param maxExecuteNum 最大执行次数
      * @param delayedTime   首次执行延时时间
      * @param retryTime     重试延时时间
      */
-    public GeneralDelayedQueue(GeneralQueueConsumerable consumerable,String id, String body, int maxExecuteNum, long delayedTime, long retryTime) {
-        this(consumerable,id, body,false, maxExecuteNum, delayedTime, retryTime, TimeUnit.MILLISECONDS);
+    public GeneralDelayedQueue(GeneralQueueConsumerable consumerable,String id, T userData, int maxExecuteNum, long delayedTime, long retryTime) {
+        this(consumerable,id, userData,false, maxExecuteNum, delayedTime, retryTime, TimeUnit.MILLISECONDS);
     }
 
 

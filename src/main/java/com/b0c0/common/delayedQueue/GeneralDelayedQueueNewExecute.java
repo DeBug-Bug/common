@@ -2,7 +2,8 @@ package com.b0c0.common.delayedQueue;
 
 
 import com.b0c0.common.delayedQueue.base.RetryTimeTypeable;
-import com.b0c0.common.utils.GeneralResult;
+import com.b0c0.common.domain.vo.GeneralResultCodeEnum;
+import com.b0c0.common.domain.vo.GeneralResultVo;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import java.util.ArrayList;
@@ -64,6 +65,7 @@ public class GeneralDelayedQueueNewExecute {
 
     /**
      * 用户可自定义异步执行时候的线程池
+     *
      * @param executor
      */
     public static void setExecutor(Executor executor) {
@@ -71,60 +73,135 @@ public class GeneralDelayedQueueNewExecute {
     }
 
     /**
-     * 添加要执行的任务方法
+     * 执行方法
      *
-     * @param task              延时队列实体
-     * @param retryTimeTypeator 重试时间的类型
+     * @param task  具体任务
+     * @param retryTimeTypeator 重试延时时间策略
      */
-    public static <T> GeneralResult<T> run(GeneralDelayedQueue task, RetryTimeTypeable retryTimeTypeator) {
-        String id = task.getId();
+    public static <T> GeneralResultVo<T> run(GeneralDelayedQueue task, RetryTimeTypeable retryTimeTypeator) {
         DelayQueue<GeneralDelayedQueue> queue = new DelayQueue<>();
-        delayQueueMap.put(id, queue);
-        taskMap.put(id, task);
-        retryTimeTypeableMap.put(id, retryTimeTypeator);
-        CountDownLatch countDownLatch = new CountDownLatch(task.getMaxExecuteNum());
-        countDownLatchMap.put(id, countDownLatch);
-        setExpireTime(task);
-        resultListMap.put(id, new ArrayList<>());
-        queue.offer(task);
-        return GeneralDelayedQueueNewExecute.execute(task);
+        initTask(task, retryTimeTypeator,queue);
+        return execute(task);
     }
 
-    public static <T> GeneralResult<T> run(GeneralDelayedQueue task) {
+    public static <T> GeneralResultVo<T> run(GeneralDelayedQueue task) {
         return run(task, DefaultRetryTimeTypeator.FixDelayedRetryTimeTypeator());
     }
-
     /**
      * 异步执行方法，可以单独为某任务根据传入一个线程池执行
      *
-     * @param task
-     * @param retryTimeTypeator
-     * @param executor
+     * @param task              具体任务
+     * @param retryTimeTypeator 重试延时时间策略
+     * @param executor          用户自定义线程池
      */
-    public static void asyncRun(GeneralDelayedQueue task, RetryTimeTypeable retryTimeTypeator, Executor executor) {
+    public static void runAsync(GeneralDelayedQueue task, RetryTimeTypeable retryTimeTypeator, Executor executor) {
         executor.execute(() -> {
             run(task, retryTimeTypeator);
         });
     }
 
-    public static void asyncRun(GeneralDelayedQueue task, RetryTimeTypeable retryTimeTypeator) {
+    /**
+     * 异步执行方法 默认内置线程池
+     *
+     * @param task              具体任务
+     * @param retryTimeTypeator 重试延时时间策略
+     */
+    public static void runAsync(GeneralDelayedQueue task, RetryTimeTypeable retryTimeTypeator) {
         executor.execute(() -> {
             run(task, retryTimeTypeator);
         });
     }
 
-    public static void asyncRun(GeneralDelayedQueue task) {
+    /**
+     * 异步执行方法  默认内置线程池
+     *
+     * @param task 具体任务
+     */
+    public static void runAsync(GeneralDelayedQueue task) {
         executor.execute(() -> {
             run(task);
         });
     }
 
-    private static <T> GeneralResult<T> execute(GeneralDelayedQueue task) {
+    /**
+     * 任务链的执行方法 自定义顺序完成(流水线完成任务) 例如A -> B -> C
+     * 并且任务的执行结果会自动传递给下一任务。比如A任务的执行结果，会传递给B任务。
+     * 如
+     * @param tasks              具体任务list集合，会按照集合的添加顺序来流水线顺序执行任务
+     * @param retryTimeTypeators 重试延时时间策略
+     */
+    public static <T> GeneralResultVo<T> runLine(List<GeneralDelayedQueue> tasks, List<RetryTimeTypeable> retryTimeTypeators) {
 
-        GeneralResult<T> result = GeneralResult.fail();
+        if (tasks == null || tasks.isEmpty() || retryTimeTypeators == null || retryTimeTypeators.isEmpty()) {
+            return GeneralResultVo.fail(GeneralResultCodeEnum.PARAM_ERROR.getCode(), "任务集合和重试延时时间策略集合不能为空");
+        }
+        int taskSize = tasks.size();
+        if (taskSize != retryTimeTypeators.size()) {
+            return GeneralResultVo.fail(GeneralResultCodeEnum.PARAM_ERROR.getCode(), "任务集合和重试延时时间策略集合大小不一致，无法相互对应");
+        }
+        DelayQueue<GeneralDelayedQueue> queue = new DelayQueue<>();
+        GeneralResultVo<T> resultVo = GeneralResultVo.fail();
+        for (int i = 0; i < taskSize; i++) {
+            initTask(tasks.get(i), retryTimeTypeators.get(i),queue);
+            resultVo = execute(tasks.get(i));
+            if(!resultVo.isSuccess()) {
+                break;
+            }
+        }
+        return resultVo;
+    }
+
+    public static <T> GeneralResultVo<T> runLine(List<GeneralDelayedQueue> tasks) {
+        int taskSize = tasks.size();
+        List<RetryTimeTypeable> retryTimeTypeators = new ArrayList<>();
+        for (int i = 0; i < taskSize; i++) {
+            retryTimeTypeators.add(DefaultRetryTimeTypeator.FixDelayedRetryTimeTypeator());
+        }
+        return runLine(tasks, retryTimeTypeators);
+    }
+
+    /**
+     * 异步执行任务链方法，可以单独为某任务根据传入一个线程池执行
+     *
+     * @param tasks              具体任务
+     * @param retryTimeTypeators 重试延时时间策略
+     * @param executor          用户自定义线程池
+     */
+    public static void runLinesync(List<GeneralDelayedQueue> tasks, List<RetryTimeTypeable> retryTimeTypeators, Executor executor) {
+        executor.execute(() -> {
+            runLine(tasks, retryTimeTypeators);
+        });
+    }
+
+    /**
+     * 异步执行任务链方法 默认内置线程池
+     *
+     * @param tasks              具体任务
+     * @param retryTimeTypeators 重试延时时间策略
+     */
+    public static void runLinesync(List<GeneralDelayedQueue> tasks, List<RetryTimeTypeable> retryTimeTypeators) {
+        executor.execute(() -> {
+            runLine(tasks, retryTimeTypeators);
+        });
+    }
+
+    /**
+     * 异步执行任务链方法  默认内置线程池
+     *
+     * @param tasks 具体任务
+     */
+    public static void runLinesync(List<GeneralDelayedQueue> tasks) {
+        executor.execute(() -> {
+            runLine(tasks);
+        });
+    }
+
+    private static <T> GeneralResultVo<T> execute(GeneralDelayedQueue task) {
+
+        GeneralResultVo<T> result = GeneralResultVo.fail();
         String id = task.getId();
         RetryTimeTypeable retryTimeTypeator = retryTimeTypeableMap.get(id);
-        List<GeneralResult<T>> resultList = resultListMap.get(id);
+        List<GeneralResultVo<T>> resultList = resultListMap.get(id);
         CountDownLatch countDownLatch = countDownLatchMap.get(id);
         DelayQueue<GeneralDelayedQueue> queue = delayQueueMap.get(id);
         try {
@@ -147,13 +224,12 @@ public class GeneralDelayedQueueNewExecute {
                     countDownLatch.countDown();
                 }
             }
-            if (task.isKeepResults()) {
-                clearByTaskId(task.getId());
+            if (!task.isKeepResults()) {
+                clearTask(task.getId());
             }
         }
         return result;
     }
-
 
     private static void setExpireTime(GeneralDelayedQueue task) {
         long expireTime = 0;
@@ -174,11 +250,11 @@ public class GeneralDelayedQueueNewExecute {
      * @param fastReturn 立即返回 true 代表立即返回， false 代表必须等到最大执行次数后返回（list.size = maxExecuteNum）
      * @return 执行结果列表
      */
-    public static <T> List<GeneralResult<T>> getResultList(GeneralDelayedQueue task, boolean fastReturn) {
+    public static <T> List<GeneralResultVo<T>> getResultList(GeneralDelayedQueue task, boolean fastReturn) {
         try {
             String id = task.getId();
             if (!fastReturn) {
-                countDownAwait(id, null, null);
+                awaitCountDown(id, null, null);
             }
             return resultListMap.get(id);
         } catch (InterruptedException e) {
@@ -192,7 +268,7 @@ public class GeneralDelayedQueueNewExecute {
      *
      * @return
      */
-    public static <T> GeneralResult<T> getLastResult(GeneralDelayedQueue task) {
+    public static <T> GeneralResultVo<T> getLastResult(GeneralDelayedQueue task) {
         try {
             String id = task.getId();
             CountDownLatch countDownLatch = countDownLatchMap.get(id);
@@ -200,12 +276,12 @@ public class GeneralDelayedQueueNewExecute {
             if (countDownLatch.getCount() == task.getMaxExecuteNum()) {
                 countDownLatch.await();
             }
-            List<GeneralResult<T>> resultList = resultListMap.get(id);
+            List<GeneralResultVo<T>> resultList = resultListMap.get(id);
             return resultList.get(resultList.size() - 1);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return GeneralResult.fail();
+        return GeneralResultVo.fail();
     }
 
     /**
@@ -213,16 +289,16 @@ public class GeneralDelayedQueueNewExecute {
      *
      * @return
      */
-    public static <T> GeneralResult<T> getFinalResult(GeneralDelayedQueue task) {
+    public static <T> GeneralResultVo<T> getFinalResult(GeneralDelayedQueue task) {
         try {
             String id = task.getId();
-            countDownAwait(id, null, null);
-            List<GeneralResult<T>> resultList = resultListMap.get(id);
+            awaitCountDown(id, null, null);
+            List<GeneralResultVo<T>> resultList = resultListMap.get(id);
             return resultList.get(resultList.size() - 1);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return GeneralResult.fail();
+        return GeneralResultVo.fail();
     }
 
     /**
@@ -232,22 +308,30 @@ public class GeneralDelayedQueueNewExecute {
      * @param timeUnit 时间单位
      * @return 如果超时返回失败
      */
-    public static <T> GeneralResult<T> getFinalResult(GeneralDelayedQueue task, long timeOut, TimeUnit timeUnit) {
+    public static <T> GeneralResultVo<T> getFinalResult(GeneralDelayedQueue task, long timeOut, TimeUnit timeUnit) {
         try {
             String id = task.getId();
-            if (countDownAwait(id, timeOut, timeUnit) == 0) {
-                List<GeneralResult<T>> resultList = resultListMap.get(id);
+            if (awaitCountDown(id, timeOut, timeUnit) == 0) {
+                List<GeneralResultVo<T>> resultList = resultListMap.get(id);
                 return resultList.get(resultList.size() - 1);
             } else {
-                return GeneralResult.fail("40001", "执行超时，剩余任务正在执行中，无法获取最终执行结果");
+                return GeneralResultVo.fail("40001", "执行超时，剩余任务正在执行中，无法获取最终执行结果");
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return GeneralResult.fail();
+        return GeneralResultVo.fail();
     }
 
-    private static long countDownAwait(String id, Long timeOut, TimeUnit timeUnit) throws InterruptedException {
+    /**
+     * 等待任务全部完成
+     * @param id 任务id
+     * @param timeOut 等待超时时间
+     * @param timeUnit 时间单位
+     * @return countDownLatch当前计数值
+     * @throws InterruptedException
+     */
+    private static long awaitCountDown(String id, Long timeOut, TimeUnit timeUnit) throws InterruptedException {
         CountDownLatch countDownLatch = countDownLatchMap.get(id);
         if (timeOut == null) {
             countDownLatch.await();
@@ -258,11 +342,30 @@ public class GeneralDelayedQueueNewExecute {
     }
 
     /**
+     * 根据任务初始化任务信息
+     *
+     * @param task
+     * @param retryTimeTypeator
+     */
+    private static void initTask(GeneralDelayedQueue task, RetryTimeTypeable retryTimeTypeator,DelayQueue<GeneralDelayedQueue> queue) {
+        String id = task.getId();
+        delayQueueMap.put(id, queue);
+        taskMap.put(id, task);
+        retryTimeTypeableMap.put(id, retryTimeTypeator);
+        CountDownLatch countDownLatch = new CountDownLatch(task.getMaxExecuteNum());
+        countDownLatchMap.put(id, countDownLatch);
+        setExpireTime(task);
+        resultListMap.put(id, new ArrayList<>());
+        queue.offer(task);
+    }
+
+
+    /**
      * 根据任务id清除任务全部的map信息
      *
-     * @param taskId
+     * @param taskId 任务id
      */
-    private static void clearByTaskId(String taskId) {
+    public static void clearTask(String taskId) {
         CountDownLatch countDownLatch = countDownLatchMap.get(taskId);
         while (countDownLatch != null && countDownLatch.getCount() > 0) {
             countDownLatch.countDown();

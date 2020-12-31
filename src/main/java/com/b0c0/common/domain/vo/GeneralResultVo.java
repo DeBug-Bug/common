@@ -1,4 +1,4 @@
-package com.b0c0.common.utils;
+package com.b0c0.common.domain.vo;
 
 /**
  * @program: common
@@ -16,7 +16,7 @@ package com.b0c0.common.utils;
  * ************************************************
  */
 
-public class GeneralResult<T> {
+public class GeneralResultVo<T> {
 
     private boolean success;
 
@@ -58,30 +58,30 @@ public class GeneralResult<T> {
         this.reslutData = reslutData;
     }
 
-    public GeneralResult(boolean success, String reslutCode, String reslutMessage, T reslutData) {
+    public GeneralResultVo(boolean success, String reslutCode, String reslutMessage, T reslutData) {
         this.success = success;
         this.reslutCode = reslutCode;
         this.reslutMessage = reslutMessage;
         this.reslutData = reslutData;
     }
 
-    public static<T> GeneralResult<T> fail() {
-        return new GeneralResult<T>(false, "40000", "执行失败", null);
+    public static<T> GeneralResultVo<T> fail() {
+        return new GeneralResultVo<T>(false, GeneralResultCodeEnum.EXECU_ERROR.getCode(), "执行失败", null);
     }
 
-    public static<T> GeneralResult<T> fail(String reslutCode, String reslutMessage) {
-        return new GeneralResult<T>(false, reslutCode, reslutMessage, null);
+    public static<T> GeneralResultVo<T> fail(String reslutCode, String reslutMessage) {
+        return new GeneralResultVo<T>(false, reslutCode, reslutMessage, null);
     }
 
-    public static<T> GeneralResult<T> success() {
-        return new GeneralResult<T>(true, "200", "执行成功", null);
+    public static<T> GeneralResultVo<T> success() {
+        return new GeneralResultVo<T>(true, GeneralResultCodeEnum.SUCCESS.getCode(), "执行成功", null);
     }
 
-    public static<T> GeneralResult<T> success(T reslutData) {
-        return new GeneralResult<T>(true, "200", "执行成功", reslutData);
+    public static<T> GeneralResultVo<T> success(T reslutData) {
+        return new GeneralResultVo<T>(true, GeneralResultCodeEnum.SUCCESS.getCode(), "执行成功", reslutData);
     }
 
-    public static<T> GeneralResult<T> success(String reslutCode, String reslutMessage, T reslutData) {
-        return new GeneralResult<T>(true, reslutCode, reslutMessage, reslutData);
+    public static<T> GeneralResultVo<T> success(String reslutCode, String reslutMessage, T reslutData) {
+        return new GeneralResultVo<T>(true, reslutCode, reslutMessage, reslutData);
     }
 }

@@ -65,9 +65,8 @@
 1. 支持任务单次执行的失败重试，开发者并可自定义配置重试延时时间策略（默认四种：渐进步长、固定时间、固定步长、斐波那契数列）、重试次数。
 2. 支持查看每次执行结果（包括失败重试的执行结果）。
 3. 一个执行器统一管理所有任务，现在一个执行器只能管理执行一个任务(2020.12.30)
-
+4. 支持任务自定义顺序完成(流水线完成任务) 例如1 -> 2 -> 3
 #### 未完成
-2. 支持任务自定义顺序完成(流水线完成任务) 例如1 -> 2 -> 3
 3. 区分重复执行和执行失败分离
    * 支持重复执行（可配置重复执行、失败重试，并且可分别配置重复执行的延时时间和失败重试的延时时间策略。）
 4. 支持执行失败可自定义失败执行的逻辑（默认为原逻辑不变）
@@ -99,8 +98,8 @@ public class GeneralDelayedQueueExecuteTest {
                 delayedQueue,
                 DefaultRetryTimeTypeator.FixDelayedRetryTimeTypeator());
         delayedQueueExecute.run();
-        GeneralResult generalResult = delayedQueueExecute.getLastResult();
-        System.out.println(generalResult.getReslutData());
+        GeneralResult generalResultVo = delayedQueueExecute.getLastResult();
+        System.out.println(generalResultVo.getReslutData());
 
     }
 
