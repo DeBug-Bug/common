@@ -6,8 +6,7 @@
 
     <groupId>com.b0c0</groupId>
     <artifactId>common</artifactId>
-<!--    <version>0.0.6</version>-->
-    <version>0.0.6</version>
+    <version>0.0.7</version>
     <packaging>jar</packaging>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>b0c0 common</description>
@@ -38,12 +37,6 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>21.0</version>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 

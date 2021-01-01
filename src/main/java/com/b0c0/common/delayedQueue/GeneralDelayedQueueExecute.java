@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.logging.Logger;
 
 
 /**
@@ -34,6 +35,8 @@ import java.util.concurrent.*;
  * 并且能够支持多线程调用，所以此类已经实现了Runnable接口，开发者可以根据需要来多线程调用或者直接同步调用。
  */
 public class GeneralDelayedQueueExecute {
+
+    private static final Logger logger = Logger.getLogger(GeneralDelayedQueueExecute.class.getName());
 
     //延时队列
     private static Map<String, DelayQueue<GeneralDelayedQueue>> delayQueueMap = new ConcurrentHashMap<>();

@@ -74,7 +74,7 @@ public class GeneralPrintLogAspect {
         }
         //得到参数值
         Object[] args = joinPoint.getArgs();
-        StringBuilder sb = new StringBuilder("通用日志打印AOP uuid -> " + uuid + "  方法解释 -> " + generalPrintLogAOP.value() + " 类名 -> " + className + " 方法名 -> " + methodName
+        StringBuilder sb = new StringBuilder("通用日志打印AOP Thread -> " + Thread.currentThread().getId() + " uuid -> " + uuid + "  方法解释 -> " + generalPrintLogAOP.value() + " 类名 -> " + className + " 方法名 -> " + methodName
                 + " 请求参数 -> ");
         for (int i = 0; i < parameterNames.length; i++) {
             sb.append(" " + parameterNames[i] + " -> ");
@@ -91,14 +91,14 @@ public class GeneralPrintLogAspect {
             //调用执行目标方法并得到执行方法的返回值
             obj = joinPoint.proceed();
         } catch (Throwable throwable) {
-            logger.severe("通用日志打印AOP uuid -> " + uuid + " 类名 -> " + className + " 方法名 -> " + methodName + " 执行出异常,异常信息：" + throwable.toString());
+            logger.severe("通用日志打印AOP Thread -> " + Thread.currentThread().getId() + " uuid -> " + uuid + " 类名 -> " + className + " 方法名 -> " + methodName + " 执行出异常,异常信息：" + throwable.toString());
             throwable.printStackTrace();
         }
         long endExecuteTime = System.currentTimeMillis();
         if (sb.length() > generalPrintLogAOP.maxLogLength()) {
-            logger.info("通用日志打印AOP uuid -> " + uuid + " 方法解释 -> " + generalPrintLogAOP.value() + " 类名 -> " + className + " 方法名 -> " + methodName + " 执行完成，执行结果 -> " + JSON.toJSONString(obj).substring(0, sb.length() - 1) + "，执行时间 -> " + (endExecuteTime - beginExecuteTime) + "ms");
+            logger.info("通用日志打印AOP Thread -> " + Thread.currentThread().getId() + " uuid -> " + uuid + " 方法解释 -> " + generalPrintLogAOP.value() + " 类名 -> " + className + " 方法名 -> " + methodName + " 执行完成，执行结果 -> " + JSON.toJSONString(obj).substring(0, sb.length() - 1) + "，执行时间 -> " + (endExecuteTime - beginExecuteTime) + "ms");
         } else {
-            logger.info("通用日志打印AOP uuid -> " + uuid + " 方法解释 -> " + generalPrintLogAOP.value() + " 类名 -> " + className + " 方法名 -> " + methodName + " 执行完成，执行结果 -> " + JSON.toJSONString(obj) + "，执行时间 -> " + (endExecuteTime - beginExecuteTime) + "ms");
+            logger.info("通用日志打印AOP Thread -> " + Thread.currentThread().getId() + " uuid -> " + uuid + " 方法解释 -> " + generalPrintLogAOP.value() + " 类名 -> " + className + " 方法名 -> " + methodName + " 执行完成，执行结果 -> " + JSON.toJSONString(obj) + "，执行时间 -> " + (endExecuteTime - beginExecuteTime) + "ms");
         }
         return obj;
     }

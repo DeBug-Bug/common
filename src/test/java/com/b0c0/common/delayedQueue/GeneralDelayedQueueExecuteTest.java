@@ -13,8 +13,14 @@ public class GeneralDelayedQueueExecuteTest {
 
     private static final Logger logger = Logger.getLogger(GeneralDelayedQueueExecuteTest.class.getName());
 
+    public static void main(String[] args) {
+        GeneralDelayedQueueExecuteTest test = new GeneralDelayedQueueExecuteTest();
+        test.run();
+//        test.runAsync();
+//        test.runLine();
+    }
 
-    @org.junit.Test
+
     public void run() {
         GeneralDelayedQueue delayedQueue1 = new GeneralDelayedQueue(
                 new TestConsumer1(), "1", "body", 1, 500, 50);
@@ -28,8 +34,6 @@ public class GeneralDelayedQueueExecuteTest {
         GeneralDelayedQueueExecute.run(delayedQueue3);
     }
 
-
-    @org.junit.Test
     public void runAsync() throws ExecutionException, InterruptedException {
         GeneralDelayedQueue delayedQueue1 = new GeneralDelayedQueue(
                 new TestConsumer1(), "1", "body", 5, 500, 5);
@@ -46,7 +50,6 @@ public class GeneralDelayedQueueExecuteTest {
 
     }
 
-    @org.junit.Test
     public void runLine() {
         GeneralDelayedQueue delayedQueue1 = new GeneralDelayedQueue(
                 new TestConsumer1(), "1", "body", 2, 500, 5);
@@ -59,7 +62,7 @@ public class GeneralDelayedQueueExecuteTest {
         list.add(delayedQueue2);
         list.add(delayedQueue3);
         GeneralResultVo<String> a = GeneralDelayedQueueExecute.runLine(list);
-        Test t = (Test) delayedQueue3.getBodyData().getPreResult();
+        TestVo t = (TestVo) delayedQueue3.getBodyData().getPreResult();
         System.out.println(t.getA());
         System.out.println(a.getReslutData());
 
@@ -71,9 +74,9 @@ public class GeneralDelayedQueueExecuteTest {
         @Override
         public GeneralResultVo<String> run(GeneralDelayedQueue<String> task) {
             String body = task.getBodyData().getBody();
-            String requestId = task.getId();
+            String id = task.getId();
             int currExecuteNum = task.getCurrExecuteNum();
-            logger.info("thread ->" + Thread.currentThread().getId() + " time ->" + System.currentTimeMillis() + " 消费延时队列 requestId -> " + requestId + " ,第 -> " + (currExecuteNum + 1) + " 次,body -> " + body);
+            logger.info("thread ->" + Thread.currentThread().getId() + " time ->" + System.currentTimeMillis() + " 消费延时队列 id -> " + id + " ,第 -> " + (currExecuteNum + 1) + " 次,body -> " + body);
             if (task.getId().equals("3")) {
                 return GeneralResultVo.fail();
             } else {
@@ -82,22 +85,22 @@ public class GeneralDelayedQueueExecuteTest {
         }
     }
 
-    static class TestConsumer2 implements GeneralQueueConsumerable<Test, String> {
+    static class TestConsumer2 implements GeneralQueueConsumerable<TestVo, String> {
 
         @Override
-        public GeneralResultVo<Test> run(GeneralDelayedQueue<String> task) {
+        public GeneralResultVo<TestVo> run(GeneralDelayedQueue<String> task) {
             String body = task.getBodyData().getBody();
-            String requestId = task.getId();
+            String id = task.getId();
             int currExecuteNum = task.getCurrExecuteNum();
-            logger.info("thread ->" + Thread.currentThread().getId() + "time ->" + System.currentTimeMillis() + " 消费延时队列 requestId -> " + requestId + " ,第 -> " + (currExecuteNum + 1) + " 次,body -> " + body);
-            Test test = new Test();
-            test.setA("a");
-            test.setB("b");
-            return GeneralResultVo.success(test);
+            logger.info("thread ->" + Thread.currentThread().getId() + "time ->" + System.currentTimeMillis() + " 消费延时队列 id -> " + id + " ,第 -> " + (currExecuteNum + 1) + " 次,body -> " + body);
+            TestVo testVo = new TestVo();
+            testVo.setA("a");
+            testVo.setB("b");
+            return GeneralResultVo.success(testVo);
         }
     }
 
-    public static class Test {
+    public static class TestVo {
         private String a;
         private String b;
 

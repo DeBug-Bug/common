@@ -16,6 +16,39 @@ public class SortListUtil {
     public static final String DESC = "desc";
     public static final String ASC = "asc";
 
+    public class OrderByParamDto{
+        //根据什么排序（此字段为返回参数的任意值）
+        private String[] orderBy;
+        //此值只有两个 asc 代表 升序 desc代表降序
+        private String[] ascOrdesc;
+        //top前n个数据
+        private Integer topN;
+
+        public String[] getOrderBy() {
+            return orderBy;
+        }
+
+        public void setOrderBy(String[] orderBy) {
+            this.orderBy = orderBy;
+        }
+
+        public String[] getAscOrdesc() {
+            return ascOrdesc;
+        }
+
+        public void setAscOrdesc(String[] ascOrdesc) {
+            this.ascOrdesc = ascOrdesc;
+        }
+
+        public Integer getTopN() {
+            return topN;
+        }
+
+        public void setTopN(Integer topN) {
+            this.topN = topN;
+        }
+    }
+
     /**
      * 对list中的元素按升序排列.
      *
@@ -25,6 +58,59 @@ public class SortListUtil {
      */
     public static List<?> sort(List<?> list, final String field) {
         return sort(list, field, null);
+    }
+
+    /**
+     * 对list中的元素按排列.并且可以指定数量截取topN
+     *
+     * @param list  排序集合
+     * @param orderByParamDto 排序字段
+     * @return
+     */
+    public static List<?> sort(List<?> list, OrderByParamDto orderByParamDto) {
+        if (list == null || list.size() == 0 ||orderByParamDto == null) {
+            return list;
+        }
+        if(orderByParamDto.getTopN() == null || list.size() < orderByParamDto.getTopN()){
+            orderByParamDto.setTopN(list.size());
+        }
+        return sort(list, orderByParamDto.getOrderBy(), orderByParamDto.getAscOrdesc()).subList(0, orderByParamDto.getTopN());
+    }
+
+    /**
+     * 对list中的元素按排列.并且可以指定数量截取topN
+     *
+     * @param list  排序集合
+     * @param field 排序字段
+     * @return
+     */
+    public static List<?> sort(List<?> list, final String field,
+                               final String sort, Integer topN) {
+        if (list == null || list.size() == 0) {
+            return list;
+        }
+        if(topN == null || list.size() < topN){
+            topN = list.size();
+        }
+        return sort(list, field, sort).subList(0, topN);
+    }
+
+    /**
+     * 对list中的元素按排列.并且可以指定数量截取topN
+     *
+     * @param list  排序集合
+     * @param field 排序字段
+     * @return
+     */
+    public static List<?> sort(List<?> list, final String[] field,
+                               final String[] sort, Integer topN) {
+        if (list == null || list.size() == 0) {
+            return list;
+        }
+        if(topN == null || list.size() < topN){
+            topN = list.size();
+        }
+        return sort(list, field, sort).subList(0, topN);
     }
 
     /**
@@ -38,10 +124,11 @@ public class SortListUtil {
     @SuppressWarnings("unchecked")
     public static List<?> sort(List<?> list, final String field,
                                final String sort) {
-        if (list == null || list.size() == 0) {
+        if (list == null ||list.isEmpty()) {
             return list;
         }
         Collections.sort(list, new Comparator() {
+            @Override
             public int compare(Object a, Object b) {
                 int ret = 0;
                 try {
@@ -111,6 +198,7 @@ public class SortListUtil {
                 }
                 final String sort = tmpSort;
                 Collections.sort(list, new Comparator() {
+                    @Override
                     public int compare(Object a, Object b) {
                         int ret = 0;
                         try {
@@ -177,6 +265,7 @@ public class SortListUtil {
     public static List<?> sortByMethod(List<?> list, final String method,
                                        final String sort) {
         Collections.sort(list, new Comparator() {
+            @Override
             public int compare(Object a, Object b) {
                 int ret = 0;
                 try {
@@ -244,6 +333,7 @@ public class SortListUtil {
                 }
                 final String sort = tmpSort;
                 Collections.sort(list, new Comparator() {
+                    @Override
                     public int compare(Object a, Object b) {
                         int ret = 0;
                         try {
