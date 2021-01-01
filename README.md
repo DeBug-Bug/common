@@ -6,9 +6,9 @@
  * @author: lidongsheng
  * @createData: 2020-10-02 18:41
  * @updateAuthor: lidongsheng
- * @updateData: 2020-10-24 11:41
+ * @updateData: 2021-01-01 11:41
  * @updateContent:
- * @Version: 0.0.5
+ * @Version: 最新版本 0.0.7
  * @email: lidongshenglife@163.com
  * @blog: https://www.b0c0.com
  * @csdn: https://blog.csdn.net/LDSWAN0
@@ -17,44 +17,6 @@
  * ************************************************
  */
 
-# 常见问题说明
-
-## 1. 无法拉取SNAPSHOT版本的问题
-如果是SNAPSHOT版本，具体说明请自行百度SNAPSHOT和release版本的区别
-如果确认版本号没有错的话，例如是0.0.5-SNAPSHOT版本：
-```
-    <dependency>
-        <groupId>com.b0c0</groupId>
-        <artifactId>common</artifactId>
-        <version>0.0.5-SNAPSHOT</version>
-    </dependency>
-```
-提示无法找到无法拉取的话，请在项目的pom.xml文件中添加如下：
-```
-    <!-- 提示无法找到无法拉取的话，请在项目的pom.xml（和dependencies同级）文件中加入以下设置 -->
-    <repositories>
-        <repository>
-            <snapshots>
-                <enabled>true</enabled>
-                <!-- 保持总是拉取最新版本，即使版本一样也会覆盖已经存在的（如果作为稳定开发的话，建议将此值设置为never，
-                        如需要最新的时候可再将此值设置为always，再重新拉取。） -->
-                <updatePolicy>always</updatePolicy>
-            </snapshots>
-            <id>snapshots</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-        </repository>
-    </repositories>
-```
-## 2. 关于@GeneralPrintAOP 日志注解不生效的问题
-
-请在项目启动类上添加
-
-```
-@Import({a.class, b.class, GeneralPrintLogAspect.class})
-```
-
-
- 
 
 # 基础包
 
@@ -70,6 +32,7 @@
 3. 区分重复执行和执行失败分离 (放弃，没有太大必要)
    * 支持重复执行（可配置重复执行、失败重试，并且可分别配置重复执行的延时时间和失败重试的延时时间策略。）
 4. 支持执行失败可自定义失败执行的逻辑（默认为原逻辑不变） (放弃，没有太大必要)
+
 
 ### UPDATE LOG:
 
@@ -211,12 +174,40 @@ public class GeneralDelayedQueueExecuteTestVo {
 }
 ```
 
+# 常见问题说明
 
-* 添加通用日志打印注解 @GeneralPrintAOP
-
-使用此注解务必再项目启动类上加上
+## 1. 无法拉取SNAPSHOT版本的问题
+如果是SNAPSHOT版本，具体说明请自行百度SNAPSHOT和release版本的区别
+如果确认版本号没有错的话，例如是0.0.5-SNAPSHOT版本：
 ```
-@Import({GeneralPrintLogAspect.class})
+    <dependency>
+        <groupId>com.b0c0</groupId>
+        <artifactId>common</artifactId>
+        <version>0.0.5-SNAPSHOT</version>
+    </dependency>
+```
+提示无法找到无法拉取的话，请在项目的pom.xml文件中添加如下：
+```
+    <!-- 提示无法找到无法拉取的话，请在项目的pom.xml（和dependencies同级）文件中加入以下设置 -->
+    <repositories>
+        <repository>
+            <snapshots>
+                <enabled>true</enabled>
+                <!-- 保持总是拉取最新版本，即使版本一样也会覆盖已经存在的（如果作为稳定开发的话，建议将此值设置为never，
+                        如需要最新的时候可再将此值设置为always，再重新拉取。） -->
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+            <id>snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        </repository>
+    </repositories>
+```
+## 2. 关于@GeneralPrintAOP 日志注解不生效的问题
+
+请在项目启动类上添加
+
+```
+@Import({a.class, b.class, GeneralPrintLogAspect.class})
 ```
 
     
