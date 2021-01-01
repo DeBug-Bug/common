@@ -124,13 +124,6 @@ public class GeneralDelayedQueueExecute {
     /**
      * 任务链的执行方法 自定义顺序完成(流水线完成任务) 例如A -> B -> C
      * 并且任务的执行结果会自动传递给下一任务。比如A任务的执行结果，会传递给B任务。
-     * 如
-     * @param tasks              具体任务list集合，会按照集合的添加顺序来流水线顺序执行任务
-     * @param retryTimeTypeators 重试延时时间策略
-     */
-    /**
-     * 任务链的执行方法 自定义顺序完成(流水线完成任务) 例如A -> B -> C
-     * 并且任务的执行结果会自动传递给下一任务。比如A任务的执行结果，会传递给B任务。
      *
      * @param tasks              具体任务list集合，会按照集合的添加顺序来流水线顺序执行任务
      * @param retryTimeTypeators 重试延时时间策略
