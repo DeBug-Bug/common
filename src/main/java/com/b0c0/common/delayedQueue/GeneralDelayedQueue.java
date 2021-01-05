@@ -26,16 +26,16 @@ import java.util.concurrent.TimeUnit;
 public class GeneralDelayedQueue<T> implements Delayed {
 
 
-    public static class BodyData<T>{
+    public static class BodyData<T,V>{
         /**
-         * 开发者自定义的需要的数据体 必须为JSON字符串格式。
+         * 开发者自定义的需要的数据体.
          */
         private T body;
 
         /**
          * 如果为任务链任务，上一个任务的执行结果会保存到这里，
          */
-        private Object preResult;
+        private V preResult;
 
         public T getBody() {
             return body;
@@ -45,11 +45,11 @@ public class GeneralDelayedQueue<T> implements Delayed {
             this.body = body;
         }
 
-        public Object getPreResult() {
+        public V getPreResult() {
             return preResult;
         }
 
-        protected void setPreResult(Object preResult) {
+        protected void setPreResult(V preResult) {
             this.preResult = preResult;
         }
     }
@@ -59,7 +59,7 @@ public class GeneralDelayedQueue<T> implements Delayed {
     /**
      * 任务的自定义数据体
      */
-    private BodyData<T> bodyData;
+    private BodyData bodyData;
     /**
      * 任务当前的执行次数(可设置此值为maxExecuteNum来达到强制中断之后的重试执行)
      *
@@ -107,12 +107,12 @@ public class GeneralDelayedQueue<T> implements Delayed {
         return id;
     }
 
-    public BodyData<T> getBodyData() {
+    public <T,V>BodyData<T,V> getBodyData() {
         return bodyData;
     }
 
-    public static<T> BodyData<T> initBodyData(T userData) {
-        BodyData<T> bodyData= new BodyData<>();
+    public static<T,V> BodyData<T,V> initBodyData(T userData) {
+        BodyData<T,V> bodyData= new BodyData<>();
         bodyData.setBody(userData);
         return bodyData;
     }

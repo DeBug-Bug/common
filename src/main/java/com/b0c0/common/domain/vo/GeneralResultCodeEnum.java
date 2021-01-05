@@ -15,9 +15,12 @@ package com.b0c0.common.domain.vo;
 public enum GeneralResultCodeEnum {
 
     SUCCESS("20000","执行成功"),
+    //程序错误44开头
     EXECU_ERROR("44000", "执行失败"),
     TIME_OUT("44001", "执行超时"),
-    PARAM_ERROR("44002", "参数错误");
+    //开发者方错误 45开头
+    PARAM_ERROR("45001", "参数错误"),
+    TASK_EXIST("45002", "任务不存在");
     private String code;
     private String desc;
 

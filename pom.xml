@@ -6,8 +6,8 @@
 
     <groupId>com.b0c0</groupId>
     <artifactId>common</artifactId>
-    <version>0.0.7</version>
-<!--    <version>0.0.7-SNAPSHOT</version>-->
+<!--    <version>0.0.7</version>-->
+    <version>0.0.7-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>b0c0 common</description>

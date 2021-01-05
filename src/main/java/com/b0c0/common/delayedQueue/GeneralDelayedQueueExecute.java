@@ -124,6 +124,8 @@ public class GeneralDelayedQueueExecute {
     /**
      * 任务链的执行方法 自定义顺序完成(流水线完成任务) 例如A -> B -> C
      * 并且任务的执行结果会自动传递给下一任务。比如A任务的执行结果，会传递给B任务。
+     * 注意：
+     * 此方法返回的为流水线最后一个任务的值，若想在最后得到某个任务或者所有任务的具体执行结果，须将 GeneralDelayedQueue.keepResults,设置为true;
      *
      * @param tasks              具体任务list集合，会按照集合的添加顺序来流水线顺序执行任务
      * @param retryTimeTypeators 重试延时时间策略
@@ -245,16 +247,26 @@ public class GeneralDelayedQueueExecute {
     /**
      * 得到全部的执行结果
      *
+     * @param taskId     任务id标识
      * @param fastReturn 立即返回 true 代表立即返回， false 代表必须等到最大执行次数后返回（list.size = maxExecuteNum）
+     * @param outTime    超时时间
+     * @param timeUnit   时间单位
      * @return 执行结果列表
      */
-    public static <T> List<GeneralResultVo<T>> getResultList(GeneralDelayedQueue task, boolean fastReturn) {
+    public static <T> List<GeneralResultVo<T>> getResultList(String taskId, boolean fastReturn, long outTime, TimeUnit timeUnit) {
         try {
-            String id = task.getId();
-            if (!fastReturn) {
-                awaitCountDown(id, null, null);
+            if (taskMap.containsKey(taskId)) {
+                if (!fastReturn) {
+                    awaitCountDown(taskId, outTime, timeUnit);
+                }
+                return resultListMap.get(taskId);
+            } else {
+                GeneralResultVo generalResultVo = GeneralResultVo.fail(
+                        GeneralResultCodeEnum.TASK_EXIST.getCode(), GeneralResultCodeEnum.TASK_EXIST.getDesc());
+                List<GeneralResultVo<T>> res = new ArrayList<>();
+                res.add(generalResultVo);
+                return res;
             }
-            return resultListMap.get(id);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -315,5 +327,6 @@ public class GeneralDelayedQueueExecute {
         countDownLatchMap.remove(taskId);
         taskMap.remove(taskId);
         resultListMap.remove(taskId);
+        retryTimeTypeableMap.remove(taskId);
     }
 }

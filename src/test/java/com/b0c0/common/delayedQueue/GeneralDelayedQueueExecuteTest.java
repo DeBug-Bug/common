@@ -15,9 +15,15 @@ public class GeneralDelayedQueueExecuteTest {
 
     public static void main(String[] args) {
         GeneralDelayedQueueExecuteTest test = new GeneralDelayedQueueExecuteTest();
-        test.run();
-//        test.runAsync();
-//        test.runLine();
+//        test.run();
+//        try {
+//            test.runAsync();
+//        } catch (ExecutionException e) {
+//            e.printStackTrace();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+        test.runLine();
     }
 
 
@@ -69,27 +75,30 @@ public class GeneralDelayedQueueExecuteTest {
     }
 
 
-    static class TestConsumer1 implements GeneralQueueConsumerable<String, String> {
+    static class TestConsumer1 implements GeneralQueueConsumerable {
+
 
         @Override
-        public GeneralResultVo<String> run(GeneralDelayedQueue<String> task) {
-            String body = task.getBodyData().getBody();
+        public GeneralResultVo<String> run(GeneralDelayedQueue task) {
+            GeneralDelayedQueue.BodyData<String,String> resultVo = task.getBodyData();
+            String body = resultVo.getBody();
             String id = task.getId();
             int currExecuteNum = task.getCurrExecuteNum();
             logger.info("thread ->" + Thread.currentThread().getId() + " time ->" + System.currentTimeMillis() + " 消费延时队列 id -> " + id + " ,第 -> " + (currExecuteNum + 1) + " 次,body -> " + body);
             if (task.getId().equals("3")) {
                 return GeneralResultVo.fail();
             } else {
-                return GeneralResultVo.success("test");
+                return GeneralResultVo.success("sss");
             }
         }
     }
 
-    static class TestConsumer2 implements GeneralQueueConsumerable<TestVo, String> {
+    static class TestConsumer2 implements GeneralQueueConsumerable {
 
         @Override
-        public GeneralResultVo<TestVo> run(GeneralDelayedQueue<String> task) {
-            String body = task.getBodyData().getBody();
+        public GeneralResultVo<TestVo> run(GeneralDelayedQueue task) {
+            GeneralDelayedQueue.BodyData<String,String> resultVo = task.getBodyData();
+            String body = resultVo.getBody();
             String id = task.getId();
             int currExecuteNum = task.getCurrExecuteNum();
             logger.info("thread ->" + Thread.currentThread().getId() + "time ->" + System.currentTimeMillis() + " 消费延时队列 id -> " + id + " ,第 -> " + (currExecuteNum + 1) + " 次,body -> " + body);
