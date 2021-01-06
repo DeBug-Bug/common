@@ -168,9 +168,10 @@ public class GeneralDelayedQueue<T> implements Delayed {
     /**
      * 完整参数的构造方法
      *
-     * @param id     唯一标识
+     * @param consumerable  具体任务方法
+     * @param id            唯一标识
      * @param userData      主题内容
-     * @param keepResults   执行结果一直保存,可在执行器中随时获取，直至开发人员手动调用删除,zhuyi
+     * @param keepResults   true表示执行结果一直保存,可在执行器中随时获取，直至开发人员手动调用删除
      * @param maxExecuteNum 最大执行次数
      * @param delayedTime   首次执行延时时间
      * @param retryTime     重试延时时间
@@ -193,7 +194,8 @@ public class GeneralDelayedQueue<T> implements Delayed {
     /**
      * 构造方法 默认时间单位秒,自动捕获异常
      *
-     * @param id     唯一标识
+     * @param consumerable  具体任务方法
+     * @param id            唯一标识
      * @param userData      主题内容
      * @param maxExecuteNum 最大执行次数
      * @param delayedTime   首次执行延时时间

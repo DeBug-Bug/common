@@ -8,7 +8,7 @@
  * @updateAuthor: lidongsheng
  * @updateData: 2021-01-01 11:41
  * @updateContent:
- * @Version: 最新版本 0.0.7
+ * @Version: 最新版本 0.0.8
  * @email: lidongshenglife@163.com
  * @blog: https://www.b0c0.com
  * @csdn: https://blog.csdn.net/LDSWAN0
@@ -36,9 +36,9 @@
 
 ### UPDATE LOG:
 
-#### 最新稳定版本：0.0.7
+#### 最新稳定版本：0.0.8
 
-#### 最新开发版本：0.0.8-SNAPSHOT
+#### 最新开发版本：0.0.9-SNAPSHOT
 
 #### 0.0.4: 
 * 添加延时队列(可自定义延时时间和失败重试-延时步长)
@@ -46,27 +46,29 @@
 #### 0.0.6: 
 * 支持返回结果（同步异步）
 
-#### 0.0.7:
+#### 0.0.8:
 * 一个执行器统一管理所有任务
 * 异步执行结果通过Future获得  
 * 支持任务自定义顺序完成(流水线完成任务)
 
 使用示例：
 ```
-package com.b0c0.common.delayedQueue;
+public class GeneralDelayedQueueExecuteTest {
 
-import com.b0c0.common.delayedQueue.base.GeneralQueueConsumerable;
-import com.b0c0.common.domain.vo.GeneralResultVo;
+    private static final Logger logger = Logger.getLogger(GeneralDelayedQueueExecuteTest.class.getName());
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.logging.Logger;
-
-public class GeneralDelayedQueueExecuteTestVo {
-
-    private static final Logger logger = Logger.getLogger(GeneralDelayedQueueExecuteTestVo.class.getName());
+    public static void main(String[] args) {
+        GeneralDelayedQueueExecuteTest test = new GeneralDelayedQueueExecuteTest();
+//        test.run();
+//        try {
+//            test.runAsync();
+//        } catch (ExecutionException e) {
+//            e.printStackTrace();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+        test.runLine();
+    }
 
 
     public void run() {
@@ -81,7 +83,6 @@ public class GeneralDelayedQueueExecuteTestVo {
         GeneralDelayedQueueExecute.run(delayedQueue2);
         GeneralDelayedQueueExecute.run(delayedQueue3);
     }
-
 
     public void runAsync() throws ExecutionException, InterruptedException {
         GeneralDelayedQueue delayedQueue1 = new GeneralDelayedQueue(
@@ -118,30 +119,33 @@ public class GeneralDelayedQueueExecuteTestVo {
     }
 
 
-    static class TestConsumer1 implements GeneralQueueConsumerable<String, String> {
+    static class TestConsumer1 implements GeneralQueueConsumerable {
+
 
         @Override
-        public GeneralResultVo<String> run(GeneralDelayedQueue<String> task) {
-            String body = task.getBodyData().getBody();
-            String requestId = task.getId();
+        public GeneralResultVo<String> run(GeneralDelayedQueue task) {
+            GeneralDelayedQueue.BodyData<String,String> resultVo = task.getBodyData();
+            String body = resultVo.getBody();
+            String id = task.getId();
             int currExecuteNum = task.getCurrExecuteNum();
-            logger.info("thread ->" + Thread.currentThread().getId() + " time ->" + System.currentTimeMillis() + " 消费延时队列 requestId -> " + requestId + " ,第 -> " + (currExecuteNum + 1) + " 次,body -> " + body);
+            logger.info("thread ->" + Thread.currentThread().getId() + " time ->" + System.currentTimeMillis() + " 消费延时队列 id -> " + id + " ,第 -> " + (currExecuteNum + 1) + " 次,body -> " + body);
             if (task.getId().equals("3")) {
                 return GeneralResultVo.fail();
             } else {
-                return GeneralResultVo.success("test");
+                return GeneralResultVo.success("sss");
             }
         }
     }
 
-    static class TestConsumer2 implements GeneralQueueConsumerable<TestVo, String> {
+    static class TestConsumer2 implements GeneralQueueConsumerable {
 
         @Override
-        public GeneralResultVo<TestVo> run(GeneralDelayedQueue<String> task) {
-            String body = task.getBodyData().getBody();
-            String requestId = task.getId();
+        public GeneralResultVo<TestVo> run(GeneralDelayedQueue task) {
+            GeneralDelayedQueue.BodyData<String,String> resultVo = task.getBodyData();
+            String body = resultVo.getBody();
+            String id = task.getId();
             int currExecuteNum = task.getCurrExecuteNum();
-            logger.info("thread ->" + Thread.currentThread().getId() + "time ->" + System.currentTimeMillis() + " 消费延时队列 requestId -> " + requestId + " ,第 -> " + (currExecuteNum + 1) + " 次,body -> " + body);
+            logger.info("thread ->" + Thread.currentThread().getId() + "time ->" + System.currentTimeMillis() + " 消费延时队列 id -> " + id + " ,第 -> " + (currExecuteNum + 1) + " 次,body -> " + body);
             TestVo testVo = new TestVo();
             testVo.setA("a");
             testVo.setB("b");
