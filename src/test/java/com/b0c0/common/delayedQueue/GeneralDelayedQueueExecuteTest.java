@@ -27,6 +27,9 @@ public class GeneralDelayedQueueExecuteTest {
     }
 
 
+    /**
+     * 同步执行示例
+     */
     public void run() {
         GeneralDelayedQueue delayedQueue1 = new GeneralDelayedQueue(
                 new TestConsumer1(), "1", "body", 1, 500, 50);
@@ -40,6 +43,11 @@ public class GeneralDelayedQueueExecuteTest {
         GeneralDelayedQueueExecute.run(delayedQueue3);
     }
 
+    /**
+     * 异步执行示例
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
     public void runAsync() throws ExecutionException, InterruptedException {
         GeneralDelayedQueue delayedQueue1 = new GeneralDelayedQueue(
                 new TestConsumer1(), "1", "body", 5, 500, 5);
@@ -56,6 +64,9 @@ public class GeneralDelayedQueueExecuteTest {
 
     }
 
+    /**
+     * 流水线执行示例
+     */
     public void runLine() {
         GeneralDelayedQueue delayedQueue1 = new GeneralDelayedQueue(
                 new TestConsumer1(), "1", "body", 2, 500, 5);

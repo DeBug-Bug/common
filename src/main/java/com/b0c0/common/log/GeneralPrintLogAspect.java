@@ -24,7 +24,7 @@ import java.util.logging.Logger;
  * @updateAuthor: lidongsheng
  * @updateData:
  * @updateContent: AOP拦截切面类
- * @Version: 1.0
+ * @Version: 0.0.8
  * @email: lidongshenglife@163.com
  * @blog: https://www.b0c0.com
  * @csdn: https://blog.csdn.net/LDSWAN0

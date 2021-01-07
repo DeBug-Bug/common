@@ -10,7 +10,7 @@ import java.lang.annotation.*;
  * @updateAuthor:
  * @updateData:
  * @updateContent: 使用AOP注解拦截
- * @Version: 1.0
+ * @Version: 0.0.8
  * @email: lidongshenglife@163.com
  * @blog: https://www.b0c0.com
  * @csdn: https://blog.csdn.net/LDSWAN0

@@ -12,7 +12,7 @@ import com.b0c0.common.domain.vo.GeneralResultVo;
  * @updateAuthor: lidongsheng
  * @updateData: 2020-09-21 15:01
  * @updateContent:
- * @Version: 1.0.0
+ * @Version: 0.0.8
  * @email: lidongshenglife@163.com
  * @blog: https://www.b0c0.com
  * @csdn: https://blog.csdn.net/LDSWAN0
