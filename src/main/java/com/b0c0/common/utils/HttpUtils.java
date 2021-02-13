@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -14,15 +13,11 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.b0c0.common.InteriorThreadPoolFactory;
 import com.b0c0.common.domain.vo.GeneralResultVo;
+import com.b0c0.common.factory.InteriorThreadPoolFactory;
 import com.b0c0.common.log.GeneralPrintLogAOP;
-import org.apache.http.Header;
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpHost;
-import org.apache.http.NameValuePair;
+import org.apache.http.*;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -30,13 +25,18 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.pool.PoolStats;
+import org.apache.http.protocol.HTTP;
+import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 
 /**
@@ -50,6 +50,22 @@ public class HttpUtils {
 
     private static PoolingHttpClientConnectionManager cm;
 
+    //保活连接
+    private static ConnectionKeepAliveStrategy keepAliveStrategy = (response, context) -> {
+        HeaderElementIterator it = new BasicHeaderElementIterator
+                (response.headerIterator(HTTP.CONN_KEEP_ALIVE));
+        while (it.hasNext()) {
+            HeaderElement he = it.nextElement();
+            String param = he.getName();
+            String value = he.getValue();
+            if (value != null && param.equalsIgnoreCase
+                    ("timeout")) {
+                return Long.parseLong(value) * 1000;
+            }
+        }
+        return 5 * 1000;//如果没有约定，则默认定义时长为5s
+    };
+
     private static final RequestConfig requestConfig = RequestConfig.custom()
             // 套接字超时（SO_TIMEOUT）以毫秒为单位
             .setSocketTimeout(5000)
@@ -60,35 +76,24 @@ public class HttpUtils {
             .build();
 
     static {
-        init();
-        closeExpiredConnectionsPeriodTask(60);
-    }
-
-    static void init() {
         cm = new PoolingHttpClientConnectionManager();
         // 最大连接数
-        cm.setMaxTotal(20);
+        cm.setMaxTotal(1024);
         // 每条路线的最大连接数
-        cm.setDefaultMaxPerRoute(2);
-        // 设置指定路由的最大连接数
-        cm.setMaxPerRoute(new HttpRoute(new HttpHost("locahost", 80)), 50);
-        httpClient = HttpClients.custom().setConnectionManager(cm).setDefaultRequestConfig(requestConfig).build();
+        cm.setDefaultMaxPerRoute(512);
+        init(cm, requestConfig,keepAliveStrategy);
+        closeExpiredConnectionsPeriodTask(1);
     }
 
-    /**
-     * 根据 PoolingHttpClientConnectionManager配置 重新设置 httpClient
-     *
-     * @param cm
-     */
-    public static void setHttpClient(PoolingHttpClientConnectionManager cm, RequestConfig requestConfig) {
-        closeExpiredConnectionsPeriodTask(60);
-        httpClient = HttpClients.custom().setConnectionManager(cm).setDefaultRequestConfig(requestConfig).build();
+    static void init(PoolingHttpClientConnectionManager cm, RequestConfig requestConfig,ConnectionKeepAliveStrategy keepAliveStrategy) {
+        httpClient = HttpClients.custom().setConnectionManager(cm).setDefaultRequestConfig(requestConfig).setKeepAliveStrategy(keepAliveStrategy).build();
     }
 
-    public static CloseableHttpClient getNewHttpClient(PoolingHttpClientConnectionManager cm, RequestConfig requestConfig) {
-        return HttpClients.custom().setConnectionManager(cm).setDefaultRequestConfig(requestConfig).build();
+    public static CloseableHttpClient getNewHttpClient(PoolingHttpClientConnectionManager cm, RequestConfig requestConfig,ConnectionKeepAliveStrategy keepAliveStrategy) {
+        return HttpClients.custom().setConnectionManager(cm).setDefaultRequestConfig(requestConfig).setKeepAliveStrategy(keepAliveStrategy).build();
     }
 
+    //    ConnectionKeepAliveStrategy
     private static void closeExpiredConnectionsPeriodTask(int timeUnitBySecond) {
         InteriorThreadPoolFactory.getGeneral().execute(() -> {
             while (!Thread.currentThread().isInterrupted()) {
@@ -97,7 +102,13 @@ public class HttpUtils {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+                PoolStats poolStats = cm.getTotalStats();
+                logger.info("PoolingHttpClientConnectionManager TotalStats:  Leased -> " + poolStats.getLeased() +
+                        ",Available -> " + poolStats.getAvailable() + ",Pending -> " + poolStats.getPending() + ",Max -> " + poolStats.getMax());
+                //关闭过期连接,就是 ConnectionKeepAliveStrategy 设置的保活时间的连接
                 cm.closeExpiredConnections();
+                //关闭闲置连接
+                cm.closeIdleConnections(10, TimeUnit.SECONDS);
             }
         });
     }
@@ -133,26 +144,24 @@ public class HttpUtils {
      * @param mediaType  请求数据类型
      * @return
      */
-    @GeneralPrintLogAOP(value = "统一请求")
-    public GeneralResultVo<String> reqHolder(String url, String headParams, String bodyParams, HttpMethod httpMethod, MediaType mediaType) {
-        try {
-            Map<String, String> map = JSONObject.parseObject(bodyParams, HashMap.class);
-            String resultString = null;
-            if (httpMethod == HttpMethod.GET) {
-                resultString = doGet(httpClient, url, headParams, map);
-            } else {
-                if (mediaType == MediaType.FROM) {
-                    resultString = doPost(httpClient, url, headParams, map);
-                } else if (mediaType == MediaType.JSON) {
-                    resultString = doPostJson(httpClient, url, headParams, bodyParams);
-                }
-            }
+    public static GeneralResultVo<String> reqHolder(String url, String headParams, String bodyParams, HttpMethod httpMethod, MediaType mediaType) {
+        return reqHolder(httpClient, url, headParams, bodyParams, httpMethod, mediaType);
+    }
 
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return GeneralResultVo.fail();
-        }
-        return GeneralResultVo.fail();
+    public static GeneralResultVo<String> reqHolderGet(String url, String headParams, String bodyParams) {
+        return reqHolder(httpClient, url, headParams, bodyParams, HttpMethod.GET, null);
+    }
+
+    public static GeneralResultVo<String> reqHolderGet(String url, String bodyParams) {
+        return reqHolder(httpClient, url, null, bodyParams, HttpMethod.GET, null);
+    }
+
+    public static GeneralResultVo<String> reqHolderPost(String url, String headParams, String bodyParams, MediaType mediaType) {
+        return reqHolder(httpClient, url, headParams, bodyParams, HttpMethod.POST, mediaType);
+    }
+
+    public static GeneralResultVo<String> reqHolderPost(String url, String bodyParams, MediaType mediaType) {
+        return reqHolder(httpClient, url, null, bodyParams, HttpMethod.POST, mediaType);
     }
 
     /**
@@ -166,20 +175,22 @@ public class HttpUtils {
      * @return
      */
     @GeneralPrintLogAOP(value = "统一请求")
-    public GeneralResultVo<String> reqHolder(CloseableHttpClient httpClient, String url, String headParams, String bodyParams, HttpMethod httpMethod, MediaType mediaType) {
+    public static GeneralResultVo<String> reqHolder(CloseableHttpClient httpClient, String url, String headParams, String bodyParams, HttpMethod httpMethod, MediaType mediaType) {
         try {
             Map<String, String> map = JSONObject.parseObject(bodyParams, HashMap.class);
             String resultString = null;
             if (httpMethod == HttpMethod.GET) {
                 resultString = doGet(httpClient, url, headParams, map);
             } else {
-                if (mediaType == MediaType.FROM) {
-                    resultString = doPost(httpClient, url, headParams, map);
-                } else if (mediaType == MediaType.JSON) {
+                if (mediaType == MediaType.JSON) {
                     resultString = doPostJson(httpClient, url, headParams, bodyParams);
+                } else {
+                    resultString = doPost(httpClient, url, headParams, map);
                 }
             }
-
+            if (resultString != null) {
+                return GeneralResultVo.success(resultString);
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
             return GeneralResultVo.fail();
@@ -210,7 +221,6 @@ public class HttpUtils {
                 if (response != null) {
                     response.close();
                 }
-                httpClient.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -225,7 +235,7 @@ public class HttpUtils {
      * @param param 参数
      * @return
      */
-    public static String doGet(CloseableHttpClient httpClient, String url, String headParams, Map<String, String> param) throws URISyntaxException {
+    private static String doGet(CloseableHttpClient httpClient, String url, String headParams, Map<String, String> param) throws URISyntaxException {
         // 创建uri
         URIBuilder builder = new URIBuilder(url);
         if (param != null) {
@@ -236,8 +246,7 @@ public class HttpUtils {
         URI uri = builder.build();
         // 创建http GET请求
         HttpGet httpGet = new HttpGet(uri);
-        execute(httpClient, httpGet, headParams);
-        return null;
+        return execute(httpClient, httpGet, headParams);
     }
 
     /**
@@ -246,7 +255,7 @@ public class HttpUtils {
      * @param url 请求地址
      * @return
      */
-    public static String doGet(CloseableHttpClient httpClient, String url) throws URISyntaxException {
+    private static String doGet(CloseableHttpClient httpClient, String url) throws URISyntaxException {
         return doGet(httpClient, url, null, null);
     }
 
@@ -258,7 +267,7 @@ public class HttpUtils {
      * @param param Map格式的参数
      * @return
      */
-    public static String doPost(CloseableHttpClient httpClient, String url, String headParams, Map<String, String> param) throws UnsupportedEncodingException {
+    private static String doPost(CloseableHttpClient httpClient, String url, String headParams, Map<String, String> param) throws UnsupportedEncodingException {
         // 创建Http Post请求
         HttpPost httpPost = new HttpPost(url);
         // 创建参数列表
@@ -280,7 +289,7 @@ public class HttpUtils {
      * @param url 请求地址
      * @return
      */
-    public static String doPost(CloseableHttpClient httpClient, String url) throws UnsupportedEncodingException {
+    private static String doPost(CloseableHttpClient httpClient, String url) throws UnsupportedEncodingException {
         return doPost(httpClient, url, null, null);
     }
 
@@ -292,7 +301,7 @@ public class HttpUtils {
      * @param json json格式参数
      * @return
      */
-    public static String doPostJson(CloseableHttpClient httpClient, String url, String headParams, String json) {
+    private static String doPostJson(CloseableHttpClient httpClient, String url, String headParams, String json) {
         // 创建Http Post请求
         HttpPost httpPost = new HttpPost(url);
         // 创建请求内容
