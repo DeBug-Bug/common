@@ -16,8 +16,9 @@ import java.util.logging.Logger;
 import com.alibaba.fastjson.JSONObject;
 import com.b0c0.common.domain.vo.GeneralResultVo;
 import com.b0c0.common.factory.InteriorThreadPoolFactory;
-import com.b0c0.common.log.GeneralPrintLogAOP;
-import org.apache.http.*;
+import org.apache.http.HeaderElement;
+import org.apache.http.HeaderElementIterator;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -174,7 +175,6 @@ public class HttpUtils {
      * @param mediaType  请求数据类型
      * @return
      */
-    @GeneralPrintLogAOP(value = "统一请求")
     public static GeneralResultVo<String> reqHolder(CloseableHttpClient httpClient, String url, String headParams, String bodyParams, HttpMethod httpMethod, MediaType mediaType) {
         try {
             Map<String, String> map = JSONObject.parseObject(bodyParams, HashMap.class);
