@@ -196,6 +196,12 @@ public class GeneralDelayedQueueExecute {
         return executor.submit(() -> runLine(tasks));
     }
 
+    /**
+     * 执行具体任务
+     * @param task
+     * @param <T>
+     * @return
+     */
     private static <T> GeneralResultVo<T> execute(GeneralDelayedQueue task) {
 
         GeneralResultVo<T> result = GeneralResultVo.fail();

@@ -10,7 +10,7 @@ import java.util.List;
 
 
 /**
- * 通用工具类之按对象中某属性排序 *
+ * 通用工具类之按对象中某属性排序
  */
 public class SortListUtil {
     public static final String DESC = "desc";
@@ -269,38 +269,38 @@ public class SortListUtil {
             public int compare(Object a, Object b) {
                 int ret = 0;
                 try {
-                    Method m = a.getClass().getMethod(method, null);
+                    Method m = a.getClass().getMethod(method);
                     m.setAccessible(true);
                     Class<?> type = m.getReturnType();
                     if (type == int.class) {
-                        ret = ((Integer) m.invoke(a, null))
-                                .compareTo((Integer) m.invoke(b, null));
+                        ret = ((Integer) m.invoke(a))
+                                .compareTo((Integer) m.invoke(b));
                     } else if (type == double.class) {
-                        ret = ((Double) m.invoke(a, null)).compareTo((Double) m
-                                .invoke(b, null));
+                        ret = ((Double) m.invoke(a)).compareTo((Double) m
+                                .invoke(b));
                     } else if (type == long.class) {
-                        ret = ((Long) m.invoke(a, null)).compareTo((Long) m
-                                .invoke(b, null));
+                        ret = ((Long) m.invoke(a)).compareTo((Long) m
+                                .invoke(b));
                     } else if (type == float.class) {
-                        ret = ((Float) m.invoke(a, null)).compareTo((Float) m
-                                .invoke(b, null));
+                        ret = ((Float) m.invoke(a)).compareTo((Float) m
+                                .invoke(b));
                     } else if (type == Date.class) {
-                        ret = ((Date) m.invoke(a, null)).compareTo((Date) m
-                                .invoke(b, null));
+                        ret = ((Date) m.invoke(a)).compareTo((Date) m
+                                .invoke(b));
                     } else if (isImplementsOf(type, Comparable.class)) {
-                        ret = ((Comparable) m.invoke(a, null))
-                                .compareTo((Comparable) m.invoke(b, null));
+                        ret = ((Comparable) m.invoke(a))
+                                .compareTo((Comparable) m.invoke(b));
                     } else {
-                        ret = String.valueOf(m.invoke(a, null)).compareTo(
-                                String.valueOf(m.invoke(b, null)));
+                        ret = String.valueOf(m.invoke(a)).compareTo(
+                                String.valueOf(m.invoke(b)));
                     }
 
                     if (isImplementsOf(type, Comparable.class)) {
-                        ret = ((Comparable) m.invoke(a, null))
-                                .compareTo((Comparable) m.invoke(b, null));
+                        ret = ((Comparable) m.invoke(a))
+                                .compareTo((Comparable) m.invoke(b));
                     } else {
-                        ret = String.valueOf(m.invoke(a, null)).compareTo(
-                                String.valueOf(m.invoke(b, null)));
+                        ret = String.valueOf(m.invoke(a)).compareTo(
+                                String.valueOf(m.invoke(b)));
                     }
 
                 } catch (NoSuchMethodException ne) {
@@ -337,33 +337,32 @@ public class SortListUtil {
                     public int compare(Object a, Object b) {
                         int ret = 0;
                         try {
-                            Method m = a.getClass().getMethod(method, null);
+                            Method m = a.getClass().getMethod(method);
                             m.setAccessible(true);
                             Class<?> type = m.getReturnType();
                             if (type == int.class) {
-                                ret = ((Integer) m.invoke(a, null))
-                                        .compareTo((Integer) m.invoke(b, null));
+                                ret = ((Integer) m.invoke(a))
+                                        .compareTo((Integer) m.invoke(b));
                             } else if (type == double.class) {
-                                ret = ((Double) m.invoke(a, null))
-                                        .compareTo((Double) m.invoke(b, null));
+                                ret = ((Double) m.invoke(a))
+                                        .compareTo((Double) m.invoke(b));
                             } else if (type == long.class) {
-                                ret = ((Long) m.invoke(a, null))
-                                        .compareTo((Long) m.invoke(b, null));
+                                ret = ((Long) m.invoke(a))
+                                        .compareTo((Long) m.invoke(b));
                             } else if (type == float.class) {
-                                ret = ((Float) m.invoke(a, null))
-                                        .compareTo((Float) m.invoke(b, null));
+                                ret = ((Float) m.invoke(a))
+                                        .compareTo((Float) m.invoke(b));
                             } else if (type == Date.class) {
-                                ret = ((Date) m.invoke(a, null))
-                                        .compareTo((Date) m.invoke(b, null));
+                                ret = ((Date) m.invoke(a))
+                                        .compareTo((Date) m.invoke(b));
                             } else if (isImplementsOf(type, Comparable.class)) {
-                                ret = ((Comparable) m.invoke(a, null))
-                                        .compareTo((Comparable) m.invoke(b,
-                                                null));
+                                ret = ((Comparable) m.invoke(a))
+                                        .compareTo((Comparable) m.invoke(b));
                             } else {
-                                ret = String.valueOf(m.invoke(a, null))
+                                ret = String.valueOf(m.invoke(a))
                                         .compareTo(
                                                 String.valueOf(m
-                                                        .invoke(b, null)));
+                                                        .invoke(b)));
                             }
 
                         } catch (NoSuchMethodException ne) {

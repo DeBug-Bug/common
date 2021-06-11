@@ -54,7 +54,9 @@ public class GeneralDelayedQueue<T> implements Delayed {
         }
     }
 
-    //任务的唯一id
+    /**
+     * 任务的唯一id
+     */
     private String id;
     /**
      * 任务的自定义数据体

@@ -6,8 +6,8 @@
 
     <groupId>com.b0c0</groupId>
     <artifactId>common</artifactId>
-    <version>0.0.8</version>
-<!--    <version>0.0.7-SNAPSHOT</version>-->
+<!--    <version>0.0.8</version>-->
+    <version>0.0.9-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>b0c0 common</description>
@@ -77,6 +77,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <build>
+                <pluginManagement>
                 <plugins>
                     <!-- 要生成Javadoc和Source jar文件，您必须配置javadoc和源Maven插件 -->
                     <plugin>
@@ -124,6 +125,7 @@
                         </executions>
                     </plugin>
                 </plugins>
+                </pluginManagement>
             </build>
             <!-- 【注】snapshotRepository 与 repository 中的 id 一定要与 setting.xml 中 server 的 id 保持一致！ -->
             <distributionManagement>
