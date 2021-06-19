@@ -8,7 +8,7 @@
  * @updateAuthor: lidongsheng
  * @updateData: 2021-01-01 11:41
  * @updateContent:
- * @Version: 最新版本 0.0.8
+ * @Version: 最新版本 0.0.9
  * @email: lidongshenglife@163.com
  * @blog: https://www.b0c0.com
  * @csdn: https://blog.csdn.net/LDSWAN0
@@ -36,9 +36,9 @@
 
 ### UPDATE LOG:
 
-#### 最新稳定版本：0.0.8
+#### 最新稳定版本：0.0.9
 
-#### 最新开发版本：0.0.9-SNAPSHOT
+#### 最新开发版本：0.1.0-SNAPSHOT
 
 #### 0.0.4: 
 * 添加延时队列(可自定义延时时间和失败重试-延时步长)
