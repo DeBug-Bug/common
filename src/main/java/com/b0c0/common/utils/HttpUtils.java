@@ -18,7 +18,10 @@ import com.b0c0.common.domain.vo.GeneralResultVo;
 import com.b0c0.common.factory.InteriorThreadPoolFactory;
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
+import org.apache.http.HttpHost;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpRequestRetryHandler;
+import org.apache.http.client.ServiceUnavailableRetryStrategy;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -31,6 +34,7 @@ import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeaderElementIterator;
@@ -51,7 +55,15 @@ public class HttpUtils {
 
     private static PoolingHttpClientConnectionManager cm;
 
-    //保活连接
+    private static HttpHost proxy;
+
+    private static HttpRequestRetryHandler retryHandler;
+
+    private static ServiceUnavailableRetryStrategy serviceUnavailStrategy;
+
+    /**
+     * 保活连接
+     */
     private static ConnectionKeepAliveStrategy keepAliveStrategy = (response, context) -> {
         HeaderElementIterator it = new BasicHeaderElementIterator
                 (response.headerIterator(HTTP.CONN_KEEP_ALIVE));
@@ -67,7 +79,7 @@ public class HttpUtils {
         return 5 * 1000;//如果没有约定，则默认定义时长为5s
     };
 
-    private static final RequestConfig requestConfig = RequestConfig.custom()
+    private static RequestConfig requestConfig = RequestConfig.custom()
             // 套接字超时（SO_TIMEOUT）以毫秒为单位
             .setSocketTimeout(5000)
             // 建立连接之前的超时时间（以毫秒为单位）。
@@ -90,8 +102,43 @@ public class HttpUtils {
         httpClient = HttpClients.custom().setConnectionManager(cm).setDefaultRequestConfig(requestConfig).setKeepAliveStrategy(keepAliveStrategy).build();
     }
 
-    public static CloseableHttpClient getNewHttpClient(PoolingHttpClientConnectionManager cm, RequestConfig requestConfig,ConnectionKeepAliveStrategy keepAliveStrategy) {
-        return HttpClients.custom().setConnectionManager(cm).setDefaultRequestConfig(requestConfig).setKeepAliveStrategy(keepAliveStrategy).build();
+
+    public static HttpClientBuilder custom() {
+        return HttpClientBuilder.create();
+    }
+
+    /**
+     * 构建一个 httpClient 并覆盖当前的HttpUtils的 httpClient
+     */
+    public void buildAndInit() {
+        httpClient = build();
+    }
+
+    /**
+     * 构建一个 httpClient
+     * @return
+     */
+    public CloseableHttpClient build() {
+        HttpClientBuilder httpClientBuilder = HttpClients.custom();
+        if(cm != null) {
+            httpClientBuilder.setConnectionManager(cm);
+        }
+        if(requestConfig != null){
+            httpClientBuilder.setDefaultRequestConfig(requestConfig);
+        }
+        if(keepAliveStrategy != null) {
+            httpClientBuilder.setKeepAliveStrategy(keepAliveStrategy);
+        }
+        if(proxy != null) {
+            httpClientBuilder.setProxy(proxy);
+        }
+        if(retryHandler != null) {
+            httpClientBuilder.setRetryHandler(retryHandler);
+        }
+        if(serviceUnavailStrategy != null) {
+            httpClientBuilder.setServiceUnavailableRetryStrategy(serviceUnavailStrategy);
+        }
+        return httpClientBuilder.build();
     }
 
     //    ConnectionKeepAliveStrategy
@@ -319,6 +366,37 @@ public class HttpUtils {
         OutputStreamWriter writer = new OutputStreamWriter(new ByteArrayOutputStream());
         String enc = writer.getEncoding();
         return enc;
+    }
+
+
+    public HttpUtils setCm(PoolingHttpClientConnectionManager cm) {
+        HttpUtils.cm = cm;
+        return this;
+    }
+
+    public HttpUtils setKeepAliveStrategy(ConnectionKeepAliveStrategy keepAliveStrategy) {
+        HttpUtils.keepAliveStrategy = keepAliveStrategy;
+        return this;
+    }
+
+    public HttpUtils setProxy(HttpHost proxy) {
+        HttpUtils.proxy = proxy;
+        return this;
+    }
+
+    public HttpUtils setRetryHandler(HttpRequestRetryHandler retryHandler) {
+        HttpUtils.retryHandler = retryHandler;
+        return this;
+    }
+
+    public HttpUtils setServiceUnavailStrategy(ServiceUnavailableRetryStrategy serviceUnavailStrategy) {
+        HttpUtils.serviceUnavailStrategy = serviceUnavailStrategy;
+        return this;
+    }
+
+    public HttpUtils setRequestConfig(RequestConfig requestConfig) {
+        HttpUtils.requestConfig = requestConfig;
+        return this;
     }
 
 }
