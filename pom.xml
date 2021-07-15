@@ -77,7 +77,6 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <build>
-                <pluginManagement>
                 <plugins>
                     <!-- 要生成Javadoc和Source jar文件，您必须配置javadoc和源Maven插件 -->
                     <plugin>
@@ -125,7 +124,6 @@
                         </executions>
                     </plugin>
                 </plugins>
-                </pluginManagement>
             </build>
             <!-- 【注】snapshotRepository 与 repository 中的 id 一定要与 setting.xml 中 server 的 id 保持一致！ -->
             <distributionManagement>
