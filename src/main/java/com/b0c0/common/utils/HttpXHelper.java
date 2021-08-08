@@ -209,7 +209,7 @@ public class HttpXHelper {
         if (openRetry && retryHandler != null) {
             httpClientBuilder.setRetryHandler(retryHandler);
         }
-        if (serviceUnavailStrategy != null) {
+        if (openRetry && retryHandler == null && serviceUnavailStrategy != null) {
             httpClientBuilder.setServiceUnavailableRetryStrategy(serviceUnavailStrategy);
         }
 
