@@ -1,11 +1,9 @@
 package com.b0c0.common.utils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,19 +14,15 @@ import java.util.logging.Logger;
 import com.alibaba.fastjson.JSONObject;
 import com.b0c0.common.domain.vo.GeneralResultVo;
 import com.b0c0.common.factory.InteriorThreadPoolFactory;
-import org.apache.http.HeaderElement;
-import org.apache.http.HeaderElementIterator;
-import org.apache.http.HttpHost;
-import org.apache.http.NameValuePair;
+import org.apache.http.*;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.ServiceUnavailableRetryStrategy;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.*;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.entity.ContentType;
@@ -44,27 +38,68 @@ import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
+
 /**
  * HttpClientUtils用来发送HTTP请求
  */
-public class HttpUtils {
+public class HttpXHelper {
 
-    private static final Logger logger = Logger.getLogger(HttpUtils.class.getName());
+    private static final Logger logger = Logger.getLogger(HttpXHelper.class.getName());
 
-    private static CloseableHttpClient httpClient;
+    private CloseableHttpClient httpClient;
 
-    private static PoolingHttpClientConnectionManager cm;
+    private PoolingHttpClientConnectionManager cm;
 
-    private static HttpHost proxy;
+    private HttpHost proxy;
 
-    private static HttpRequestRetryHandler retryHandler;
+    /**
+     * true 开启重试  false 关闭重试
+     */
+    private boolean openRetry = false;
 
-    private static ServiceUnavailableRetryStrategy serviceUnavailStrategy;
+    /**
+     * 重试策略
+     */
+    private HttpRequestRetryHandler retryHandler = creatHttpRequestRetryHandler();
 
+    /**
+     * 重试次数
+     */
+    private Integer retryNum = 3;
+
+    /**
+     * 重试间隔 ms 毫秒
+     */
+    private Long retryInterval = 250L;
+
+    private ServiceUnavailableRetryStrategy serviceUnavailStrategy = new ServiceUnavailableRetryStrategy() {
+        /**
+         * retry逻辑
+         */
+        @Override
+        public boolean retryRequest(HttpResponse response, int executionCount, HttpContext context) {
+            logger.info("retryRequest次数为:" + executionCount);
+            //当返回状态码不为200（成功）的情况下重试，重试次数默认设为3次
+            if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK && executionCount <= retryNum) {
+                return true;
+            }
+            return false;
+        }
+
+        /**
+         * retry间隔时间
+         */
+        @Override
+        public long getRetryInterval() {
+            return retryInterval;
+        }
+    };
     /**
      * 保活连接
      */
-    private static ConnectionKeepAliveStrategy keepAliveStrategy = (response, context) -> {
+    private ConnectionKeepAliveStrategy keepAliveStrategy = (response, context) -> {
         HeaderElementIterator it = new BasicHeaderElementIterator
                 (response.headerIterator(HTTP.CONN_KEEP_ALIVE));
         while (it.hasNext()) {
@@ -79,70 +114,116 @@ public class HttpUtils {
         return 5 * 1000;//如果没有约定，则默认定义时长为5s
     };
 
-    private static RequestConfig requestConfig = RequestConfig.custom()
+    private RequestConfig requestConfig = RequestConfig.custom()
             // 套接字超时（SO_TIMEOUT）以毫秒为单位
             .setSocketTimeout(5000)
             // 建立连接之前的超时时间（以毫秒为单位）。
             .setConnectTimeout(5000)
-            // 从连接池请求连接时使用的超时（以毫秒为单位）。
+            // 从链接池获取连接超时时间（以毫秒为单位）。
             .setConnectionRequestTimeout(5000)
             .build();
 
-    static {
-        cm = new PoolingHttpClientConnectionManager();
-        // 最大连接数
-        cm.setMaxTotal(1024);
-        // 每条路线的最大连接数
-        cm.setDefaultMaxPerRoute(512);
-        init(cm, requestConfig,keepAliveStrategy);
-        closeExpiredConnectionsPeriodTask(1);
+    private HttpRequestRetryHandler creatHttpRequestRetryHandler() {
+        return (e, i, httpContext) -> {
+            HttpRequestWrapper httpRequestWrapper = (HttpRequestWrapper) httpContext.getAttribute("http.request");
+            if (i > 2) {
+                logger.severe("【连接重试】 超过2次 放弃请求:" + httpRequestWrapper.getOriginal().toString());
+                return false;
+            }
+            logger.severe("【连接重试】 第 " + i + " 次重试请求 -> :" + httpRequestWrapper.getOriginal().toString());
+            if (e instanceof NoHttpResponseException) {
+                //服务器没有响应,可能是服务器断开了连接,应该重试
+                logger.severe("【连接重试】 服务器没有响应 重试:" + httpRequestWrapper.getOriginal().toString());
+                return true;
+            }
+            if (e instanceof SSLHandshakeException) {
+                // SSL握手异常
+                logger.severe("【连接重试】 SSL握手异常 重试:" + httpRequestWrapper.getOriginal().toString());
+                return false;
+            }
+            if (e instanceof InterruptedIOException) {
+                //超时
+                logger.severe("【连接重试】 超时 重试:" + httpRequestWrapper.getOriginal().toString());
+                return true;
+            }
+            if (e instanceof UnknownHostException) {
+                // 服务器不可达
+                logger.severe("【连接重试】 服务器不可达 不重试:" + httpRequestWrapper.getOriginal().toString());
+                return false;
+            }
+            if (e instanceof ConnectTimeoutException) {
+                // 连接超时
+                logger.severe("【连接重试】 连接超时 重试:" + httpRequestWrapper.getOriginal().toString());
+                return true;
+            }
+            if (e instanceof SSLException) {
+                logger.severe("【连接重试】 SSLException 不重试:" + httpRequestWrapper.getOriginal().toString());
+                return false;
+            }
+            logger.severe("未知IOException异常:" + e.getMessage());
+            HttpClientContext context = HttpClientContext.adapt(httpContext);
+            HttpRequest request = context.getRequest();
+            if (!(request instanceof HttpEntityEnclosingRequest)) {
+                logger.severe("【连接重试】 请求不是关闭连接的请求 重试:" + httpRequestWrapper.getOriginal().toString());
+                //如果请求不是关闭连接的请求
+                return true;
+            }
+            logger.severe("【连接重试】 不重试:" + httpRequestWrapper.getOriginal().toString());
+            return false;
+        };
     }
 
-    static void init(PoolingHttpClientConnectionManager cm, RequestConfig requestConfig,ConnectionKeepAliveStrategy keepAliveStrategy) {
-        httpClient = HttpClients.custom().setConnectionManager(cm).setDefaultRequestConfig(requestConfig).setKeepAliveStrategy(keepAliveStrategy).build();
-    }
-
-
-    public static HttpClientBuilder custom() {
-        return HttpClientBuilder.create();
-    }
-
-    /**
-     * 构建一个 httpClient 并覆盖当前的HttpUtils的 httpClient
-     */
-    public void buildAndInit() {
-        httpClient = build();
+    public static HttpXHelper custom() {
+        return new HttpXHelper();
     }
 
     /**
      * 构建一个 httpClient
+     *
      * @return
      */
-    public CloseableHttpClient build() {
+    public HttpXHelper build() {
+
         HttpClientBuilder httpClientBuilder = HttpClients.custom();
-        if(cm != null) {
+
+        if (cm != null) {
             httpClientBuilder.setConnectionManager(cm);
+        } else {
+            PoolingHttpClientConnectionManager defaultCm = new PoolingHttpClientConnectionManager();
+            // 最大连接数
+            defaultCm.setMaxTotal(1024);
+            // 每条路线的最大连接数
+            defaultCm.setDefaultMaxPerRoute(512);
+            cm = defaultCm;
         }
-        if(requestConfig != null){
+
+        if (requestConfig != null) {
             httpClientBuilder.setDefaultRequestConfig(requestConfig);
         }
-        if(keepAliveStrategy != null) {
+        if (keepAliveStrategy != null) {
             httpClientBuilder.setKeepAliveStrategy(keepAliveStrategy);
         }
-        if(proxy != null) {
+        if (proxy != null) {
             httpClientBuilder.setProxy(proxy);
         }
-        if(retryHandler != null) {
+        if (openRetry && retryHandler != null) {
             httpClientBuilder.setRetryHandler(retryHandler);
         }
-        if(serviceUnavailStrategy != null) {
+        if (serviceUnavailStrategy != null) {
             httpClientBuilder.setServiceUnavailableRetryStrategy(serviceUnavailStrategy);
         }
-        return httpClientBuilder.build();
+
+        httpClient = HttpClients.custom()
+                .setConnectionManager(cm)
+                .setDefaultRequestConfig(requestConfig)
+                .setKeepAliveStrategy(keepAliveStrategy)
+                .build();
+        closeExpiredConnectionsPeriodTask(5);
+        return this;
     }
 
     //    ConnectionKeepAliveStrategy
-    private static void closeExpiredConnectionsPeriodTask(int timeUnitBySecond) {
+    private void closeExpiredConnectionsPeriodTask(int timeUnitBySecond) {
         InteriorThreadPoolFactory.getGeneral().execute(() -> {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
@@ -192,23 +273,23 @@ public class HttpUtils {
      * @param mediaType  请求数据类型
      * @return
      */
-    public static GeneralResultVo<String> reqHolder(String url, String headParams, String bodyParams, HttpMethod httpMethod, MediaType mediaType) {
+    public GeneralResultVo<String> reqHolder(String url, String headParams, String bodyParams, HttpMethod httpMethod, MediaType mediaType) {
         return reqHolder(httpClient, url, headParams, bodyParams, httpMethod, mediaType);
     }
 
-    public static GeneralResultVo<String> reqHolderGet(String url, String headParams, String bodyParams) {
+    public GeneralResultVo<String> reqHolderGet(String url, String headParams, String bodyParams) {
         return reqHolder(httpClient, url, headParams, bodyParams, HttpMethod.GET, null);
     }
 
-    public static GeneralResultVo<String> reqHolderGet(String url, String bodyParams) {
+    public GeneralResultVo<String> reqHolderGet(String url, String bodyParams) {
         return reqHolder(httpClient, url, null, bodyParams, HttpMethod.GET, null);
     }
 
-    public static GeneralResultVo<String> reqHolderPost(String url, String headParams, String bodyParams, MediaType mediaType) {
+    public GeneralResultVo<String> reqHolderPost(String url, String headParams, String bodyParams, MediaType mediaType) {
         return reqHolder(httpClient, url, headParams, bodyParams, HttpMethod.POST, mediaType);
     }
 
-    public static GeneralResultVo<String> reqHolderPost(String url, String bodyParams, MediaType mediaType) {
+    public GeneralResultVo<String> reqHolderPost(String url, String bodyParams, MediaType mediaType) {
         return reqHolder(httpClient, url, null, bodyParams, HttpMethod.POST, mediaType);
     }
 
@@ -369,33 +450,33 @@ public class HttpUtils {
     }
 
 
-    public HttpUtils setCm(PoolingHttpClientConnectionManager cm) {
-        HttpUtils.cm = cm;
+    public HttpXHelper setCm(PoolingHttpClientConnectionManager cm) {
+        this.cm = cm;
         return this;
     }
 
-    public HttpUtils setKeepAliveStrategy(ConnectionKeepAliveStrategy keepAliveStrategy) {
-        HttpUtils.keepAliveStrategy = keepAliveStrategy;
+    public HttpXHelper setKeepAliveStrategy(ConnectionKeepAliveStrategy keepAliveStrategy) {
+        this.keepAliveStrategy = keepAliveStrategy;
         return this;
     }
 
-    public HttpUtils setProxy(HttpHost proxy) {
-        HttpUtils.proxy = proxy;
+    public HttpXHelper setProxy(HttpHost proxy) {
+        this.proxy = proxy;
         return this;
     }
 
-    public HttpUtils setRetryHandler(HttpRequestRetryHandler retryHandler) {
-        HttpUtils.retryHandler = retryHandler;
+    public HttpXHelper setRetryHandler(HttpRequestRetryHandler retryHandler) {
+        this.retryHandler = retryHandler;
         return this;
     }
 
-    public HttpUtils setServiceUnavailStrategy(ServiceUnavailableRetryStrategy serviceUnavailStrategy) {
-        HttpUtils.serviceUnavailStrategy = serviceUnavailStrategy;
+    public HttpXHelper setServiceUnavailStrategy(ServiceUnavailableRetryStrategy serviceUnavailStrategy) {
+        this.serviceUnavailStrategy = serviceUnavailStrategy;
         return this;
     }
 
-    public HttpUtils setRequestConfig(RequestConfig requestConfig) {
-        HttpUtils.requestConfig = requestConfig;
+    public HttpXHelper setRequestConfig(RequestConfig requestConfig) {
+        this.requestConfig = requestConfig;
         return this;
     }
 
