@@ -1,6 +1,7 @@
 package com.b0c0.common.utils;
 
 import java.io.*;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
@@ -156,6 +157,11 @@ public class HttpXHelper {
                 logger.severe("【连接重试】 连接超时 重试:" + httpRequestWrapper.getOriginal().toString());
                 return true;
             }
+            if (e instanceof SocketTimeoutException) {
+                // 连接超时
+                logger.severe("【连接重试】 连接超时 重试:" + httpRequestWrapper.getOriginal().toString());
+                return true;
+            }
             if (e instanceof SSLException) {
                 logger.severe("【连接重试】 SSLException 不重试:" + httpRequestWrapper.getOriginal().toString());
                 return false;
@@ -213,11 +219,7 @@ public class HttpXHelper {
             httpClientBuilder.setServiceUnavailableRetryStrategy(serviceUnavailStrategy);
         }
 
-        httpClient = HttpClients.custom()
-                .setConnectionManager(cm)
-                .setDefaultRequestConfig(requestConfig)
-                .setKeepAliveStrategy(keepAliveStrategy)
-                .build();
+        httpClient = httpClientBuilder.build();
         closeExpiredConnectionsPeriodTask(5);
         return this;
     }
@@ -305,6 +307,8 @@ public class HttpXHelper {
      */
     public static GeneralResultVo<String> reqHolder(CloseableHttpClient httpClient, String url, String headParams, String bodyParams, HttpMethod httpMethod, MediaType mediaType) {
         try {
+            logger.info("HttpXHelper:reqHolder begin url-> " + url + ", headParams-> " + headParams + ",bodyParams -> " + bodyParams
+                    + ", httpMethod -> " + httpMethod.name() + ", mediaType -> " + mediaType);
             Map<String, String> map = JSONObject.parseObject(bodyParams, HashMap.class);
             String resultString = null;
             if (httpMethod == HttpMethod.GET) {
@@ -316,17 +320,16 @@ public class HttpXHelper {
                     resultString = doPost(httpClient, url, headParams, map);
                 }
             }
-            if (resultString != null) {
-                return GeneralResultVo.success(resultString);
-            }
+            logger.info("HttpXHelper:reqHolder end url-> " + url + ", result -> " + resultString);
+            return GeneralResultVo.success(resultString);
         } catch (Exception ex) {
+            logger.info("HttpXHelper:reqHolder end url-> " + url + ", result Exception -> ");
             ex.printStackTrace();
-            return GeneralResultVo.fail();
         }
         return GeneralResultVo.fail();
     }
 
-    private static String execute(CloseableHttpClient httpClient, HttpUriRequest httpUriRequest, String headParams) {
+    private static String execute(CloseableHttpClient httpClient, HttpUriRequest httpUriRequest, String headParams) throws IOException {
         CloseableHttpResponse response = null;
         String resultString = "";
         try {
@@ -344,6 +347,7 @@ public class HttpXHelper {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            throw e;
         } finally {
             try {
                 if (response != null) {
@@ -363,7 +367,7 @@ public class HttpXHelper {
      * @param param 参数
      * @return
      */
-    private static String doGet(CloseableHttpClient httpClient, String url, String headParams, Map<String, String> param) throws URISyntaxException {
+    private static String doGet(CloseableHttpClient httpClient, String url, String headParams, Map<String, String> param) throws URISyntaxException, IOException {
         // 创建uri
         URIBuilder builder = new URIBuilder(url);
         if (param != null) {
@@ -383,7 +387,7 @@ public class HttpXHelper {
      * @param url 请求地址
      * @return
      */
-    private static String doGet(CloseableHttpClient httpClient, String url) throws URISyntaxException {
+    private static String doGet(CloseableHttpClient httpClient, String url) throws URISyntaxException, IOException {
         return doGet(httpClient, url, null, null);
     }
 
@@ -395,7 +399,7 @@ public class HttpXHelper {
      * @param param Map格式的参数
      * @return
      */
-    private static String doPost(CloseableHttpClient httpClient, String url, String headParams, Map<String, String> param) throws UnsupportedEncodingException {
+    private static String doPost(CloseableHttpClient httpClient, String url, String headParams, Map<String, String> param) throws IOException {
         // 创建Http Post请求
         HttpPost httpPost = new HttpPost(url);
         // 创建参数列表
@@ -417,7 +421,7 @@ public class HttpXHelper {
      * @param url 请求地址
      * @return
      */
-    private static String doPost(CloseableHttpClient httpClient, String url) throws UnsupportedEncodingException {
+    private static String doPost(CloseableHttpClient httpClient, String url) throws IOException {
         return doPost(httpClient, url, null, null);
     }
 
@@ -429,7 +433,7 @@ public class HttpXHelper {
      * @param json json格式参数
      * @return
      */
-    private static String doPostJson(CloseableHttpClient httpClient, String url, String headParams, String json) {
+    private static String doPostJson(CloseableHttpClient httpClient, String url, String headParams, String json) throws IOException {
         // 创建Http Post请求
         HttpPost httpPost = new HttpPost(url);
         // 创建请求内容

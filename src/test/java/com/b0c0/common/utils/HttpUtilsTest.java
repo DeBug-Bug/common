@@ -11,8 +11,8 @@ public class HttpUtilsTest {
 
     public static void reqHolder() {
         int max = 100;
-        System.out.println(HttpXHelper.custom().build().reqHolderGet("http://www.baidu.com", null, null).isSuccess());
-        System.out.println(HttpXHelper.custom().build().reqHolderGet("http://www.baidu.com", null, null).isSuccess());
+        System.out.println(HttpXHelper.custom().setOpenRetry(true).build().reqHolderGet("http://10.189.72.39:9108/marketcenter/api/coupon/test", null, null).isSuccess());
+//        System.out.println(HttpXHelper.custom().build().reqHolderGet("http://www.baidu.com", null, null).isSuccess());
 //        while ((max-- ) >0){
 //            InteriorThreadPoolFactory.getGeneral().execute(()->{
 //                System.out.println(HttpXHelper.custom().build().reqHolderGet("http://www.baidu.com", null, null).isSuccess());
