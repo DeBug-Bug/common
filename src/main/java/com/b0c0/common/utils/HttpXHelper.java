@@ -72,7 +72,7 @@ public class HttpXHelper {
     /**
      * 重试间隔 ms 毫秒
      */
-    private Long retryInterval = 250L;
+    private Long retryInterval = 0L;
 
     private ServiceUnavailableRetryStrategy serviceUnavailStrategy = new ServiceUnavailableRetryStrategy() {
         /**
@@ -206,10 +206,10 @@ public class HttpXHelper {
         if (proxy != null) {
             httpClientBuilder.setProxy(proxy);
         }
-        if (openRetry && retryHandler != null) {
+        if (openRetry && retryInterval == 0 && retryHandler != null) {
             httpClientBuilder.setRetryHandler(retryHandler);
         }
-        if (openRetry && retryHandler == null && serviceUnavailStrategy != null) {
+        if (openRetry && retryInterval > 0 && serviceUnavailStrategy != null) {
             httpClientBuilder.setServiceUnavailableRetryStrategy(serviceUnavailStrategy);
         }
 
@@ -480,4 +480,36 @@ public class HttpXHelper {
         return this;
     }
 
+    /**
+     * 是否重试
+     *
+     * @param openRetry
+     * @return
+     */
+    public HttpXHelper setOpenRetry(boolean openRetry) {
+        this.openRetry = openRetry;
+        return this;
+    }
+
+    /**
+     * 重试次数
+     *
+     * @param retryNum
+     * @return
+     */
+    public HttpXHelper setRetryNum(Integer retryNum) {
+        this.retryNum = retryNum;
+        return this;
+    }
+
+    /**
+     * 重试间隔时间
+     *
+     * @param retryInterval
+     * @return
+     */
+    public HttpXHelper setRetryInterval(Long retryInterval) {
+        this.retryInterval = retryInterval;
+        return this;
+    }
 }
