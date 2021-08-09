@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 
 import com.alibaba.fastjson.JSONObject;
 import com.b0c0.common.domain.vo.GeneralResultVo;
+import com.b0c0.common.factory.HttpThreadPoolFactory;
 import com.b0c0.common.factory.InteriorThreadPoolFactory;
 import org.apache.http.*;
 import org.apache.http.client.HttpRequestRetryHandler;
@@ -51,14 +52,31 @@ public class HttpXHelper {
 
     private CloseableHttpClient httpClient;
 
+    /**
+     * 默认全局连接池配置
+     */
+    private static PoolingHttpClientConnectionManager defaultCm;
+
+    /**
+     * 开发者自定义连接池配置
+     */
     private PoolingHttpClientConnectionManager cm;
 
+    /**
+     * 是否自动清理开发者自定义连接池的：闲置连接、过期连接
+     * true 自动关闭  false 开发者手动关闭 默认 true
+     */
+    private boolean autoCloseUselessConnections = true;
+
+    /**
+     * 代理配置
+     */
     private HttpHost proxy;
 
     /**
-     * true 开启重试  false 关闭重试
+     * true 开启重试  false 关闭重试 默认 true
      */
-    private boolean openRetry = false;
+    private boolean openRetry = true;
 
     /**
      * 重试策略
@@ -74,6 +92,16 @@ public class HttpXHelper {
      * 重试间隔 ms 毫秒
      */
     private Long retryInterval = 0L;
+
+
+    static {
+        defaultCm = new PoolingHttpClientConnectionManager();
+        // 最大连接数
+        defaultCm.setMaxTotal(2048);
+        // 每条路线的最大连接数
+        defaultCm.setDefaultMaxPerRoute(512);
+        closeExpiredConnectionsPeriodTask(defaultCm ,5);
+    }
 
     private ServiceUnavailableRetryStrategy serviceUnavailStrategy = new ServiceUnavailableRetryStrategy() {
         /**
@@ -112,7 +140,7 @@ public class HttpXHelper {
                 return Long.parseLong(value) * 1000;
             }
         }
-        return 5 * 1000;//如果没有约定，则默认定义时长为5s
+        return 6 * 1000;//如果没有约定，则默认定义时长为6s
     };
 
     private RequestConfig requestConfig = RequestConfig.custom()
@@ -192,17 +220,6 @@ public class HttpXHelper {
 
         HttpClientBuilder httpClientBuilder = HttpClients.custom();
 
-        if (cm != null) {
-            httpClientBuilder.setConnectionManager(cm);
-        } else {
-            PoolingHttpClientConnectionManager defaultCm = new PoolingHttpClientConnectionManager();
-            // 最大连接数
-            defaultCm.setMaxTotal(1024);
-            // 每条路线的最大连接数
-            defaultCm.setDefaultMaxPerRoute(512);
-            cm = defaultCm;
-        }
-
         if (requestConfig != null) {
             httpClientBuilder.setDefaultRequestConfig(requestConfig);
         }
@@ -218,15 +235,25 @@ public class HttpXHelper {
         if (openRetry && retryInterval > 0 && serviceUnavailStrategy != null) {
             httpClientBuilder.setServiceUnavailableRetryStrategy(serviceUnavailStrategy);
         }
-
+        if (cm != null) {
+            httpClientBuilder.setConnectionManager(cm);
+            if(autoCloseUselessConnections) {
+                closeExpiredConnectionsPeriodTask(cm, 5);
+            }
+        } else {
+            httpClientBuilder.setConnectionManager(defaultCm);
+        }
         httpClient = httpClientBuilder.build();
-        closeExpiredConnectionsPeriodTask(5);
         return this;
     }
 
-    //    ConnectionKeepAliveStrategy
-    private void closeExpiredConnectionsPeriodTask(int timeUnitBySecond) {
-        InteriorThreadPoolFactory.getGeneral().execute(() -> {
+    /**
+     * 监听连接池中过期和闲置的连接
+     * @param cm
+     * @param timeUnitBySecond
+     */
+    public static void closeExpiredConnectionsPeriodTask(PoolingHttpClientConnectionManager cm, int timeUnitBySecond) {
+        HttpThreadPoolFactory.getThread().execute(() -> {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     TimeUnit.SECONDS.sleep(timeUnitBySecond);
@@ -514,6 +541,15 @@ public class HttpXHelper {
      */
     public HttpXHelper setRetryInterval(Long retryInterval) {
         this.retryInterval = retryInterval;
+        return this;
+    }
+
+    /**
+     * 是否自动清理开发者自定义连接池的：闲置连接、过期连接
+     * @param autoCloseUselessConnections
+     */
+    public HttpXHelper setAutoCloseUselessConnections(boolean autoCloseUselessConnections) {
+        this.autoCloseUselessConnections = autoCloseUselessConnections;
         return this;
     }
 }
