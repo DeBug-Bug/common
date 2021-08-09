@@ -145,11 +145,11 @@ public class HttpXHelper {
 
     private RequestConfig requestConfig = RequestConfig.custom()
             // 套接字超时（SO_TIMEOUT）以毫秒为单位
-            .setSocketTimeout(5000)
+            .setSocketTimeout(1000)
             // 建立连接之前的超时时间（以毫秒为单位）。
-            .setConnectTimeout(5000)
+            .setConnectTimeout(1000)
             // 从链接池获取连接超时时间（以毫秒为单位）。
-            .setConnectionRequestTimeout(5000)
+            .setConnectionRequestTimeout(1000)
             .build();
 
     private HttpRequestRetryHandler creatHttpRequestRetryHandler() {
