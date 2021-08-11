@@ -76,7 +76,7 @@ public class HttpXHelper {
     /**
      * true 开启重试  false 关闭重试 默认 true
      */
-    private boolean openRetry = true;
+    private boolean openRetry = false;
 
     /**
      * 重试策略
@@ -86,7 +86,7 @@ public class HttpXHelper {
     /**
      * 重试次数
      */
-    private Integer retryNum = 3;
+    private Integer retryNum = 2;
 
     /**
      * 重试间隔 ms 毫秒
@@ -145,11 +145,11 @@ public class HttpXHelper {
 
     private RequestConfig requestConfig = RequestConfig.custom()
             // 套接字超时（SO_TIMEOUT）以毫秒为单位
-            .setSocketTimeout(1000)
+            .setSocketTimeout(3000)
             // 建立连接之前的超时时间（以毫秒为单位）。
-            .setConnectTimeout(1000)
+            .setConnectTimeout(2000)
             // 从链接池获取连接超时时间（以毫秒为单位）。
-            .setConnectionRequestTimeout(1000)
+            .setConnectionRequestTimeout(2000)
             .build();
 
     private HttpRequestRetryHandler creatHttpRequestRetryHandler() {

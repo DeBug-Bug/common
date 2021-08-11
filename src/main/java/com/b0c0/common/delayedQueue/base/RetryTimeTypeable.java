@@ -10,7 +10,7 @@ import com.b0c0.common.delayedQueue.GeneralDelayedQueue;
  * @updateAuthor: lidongsheng
  * @updateData: 2020-09-25 19:07
  * @updateContent: 重试时间的type接口
- * @Version: 0.0.8
+ * @Version: 1.0.0
  * @email: lidongshenglife@163.com
  * @blog: https://www.b0c0.com
  * @csdn: https://blog.csdn.net/LDSWAN0
