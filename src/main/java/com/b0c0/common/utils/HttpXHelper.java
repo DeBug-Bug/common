@@ -55,7 +55,12 @@ public class HttpXHelper {
     /**
      * 默认全局连接池配置
      */
-    private static PoolingHttpClientConnectionManager defaultCm;
+    private static volatile PoolingHttpClientConnectionManager defaultCm;
+
+    /**
+     * 默认的连接池
+     */
+    private boolean useDefaultCm = false;
 
     /**
      * 开发者自定义连接池配置
@@ -93,14 +98,20 @@ public class HttpXHelper {
      */
     private Long retryInterval = 0L;
 
-
-    static {
-        defaultCm = new PoolingHttpClientConnectionManager();
-        // 最大连接数
-        defaultCm.setMaxTotal(2048);
-        // 每条路线的最大连接数
-        defaultCm.setDefaultMaxPerRoute(512);
-        closeExpiredConnectionsPeriodTask(defaultCm ,5);
+    public static PoolingHttpClientConnectionManager getDefaultCm(){
+        if(defaultCm == null) {
+            synchronized (HttpXHelper.class){
+                if(defaultCm == null){
+                    defaultCm = new PoolingHttpClientConnectionManager();
+                    // 最大连接数
+                    defaultCm.setMaxTotal(1024);
+                    // 每条路线的最大连接数
+                    defaultCm.setDefaultMaxPerRoute(128);
+                    closeExpiredConnectionsPeriodTask(defaultCm ,5);
+                }
+            }
+        }
+        return defaultCm;
     }
 
     private ServiceUnavailableRetryStrategy serviceUnavailStrategy = new ServiceUnavailableRetryStrategy() {
@@ -235,13 +246,16 @@ public class HttpXHelper {
         if (openRetry && retryInterval > 0 && serviceUnavailStrategy != null) {
             httpClientBuilder.setServiceUnavailableRetryStrategy(serviceUnavailStrategy);
         }
+
         if (cm != null) {
             httpClientBuilder.setConnectionManager(cm);
             if(autoCloseUselessConnections) {
-                closeExpiredConnectionsPeriodTask(cm, 5);
+                closeExpiredConnectionsPeriodTask(cm, 1);
             }
         } else {
-            httpClientBuilder.setConnectionManager(defaultCm);
+            if(useDefaultCm) {
+                httpClientBuilder.setConnectionManager(getDefaultCm());
+            }
         }
         httpClient = httpClientBuilder.build();
         return this;
@@ -551,5 +565,13 @@ public class HttpXHelper {
     public HttpXHelper setAutoCloseUselessConnections(boolean autoCloseUselessConnections) {
         this.autoCloseUselessConnections = autoCloseUselessConnections;
         return this;
+    }
+
+    /**
+     * 是否使用默认的连接池
+     * @param useDefaultCm
+     */
+    public void setUseDefaultCm(boolean useDefaultCm) {
+        this.useDefaultCm = useDefaultCm;
     }
 }
