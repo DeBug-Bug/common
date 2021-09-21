@@ -15,7 +15,7 @@ public class GeneralDelayedQueueExecuteTest {
 
     public static void main(String[] args) {
         GeneralDelayedQueueExecuteTest test = new GeneralDelayedQueueExecuteTest();
-//        test.run();
+        test.run();
 //        try {
 //            test.runAsync();
 //        } catch (ExecutionException e) {
@@ -23,7 +23,7 @@ public class GeneralDelayedQueueExecuteTest {
 //        } catch (InterruptedException e) {
 //            e.printStackTrace();
 //        }
-        test.runLine();
+//        test.runLine();
     }
 
 
@@ -31,16 +31,17 @@ public class GeneralDelayedQueueExecuteTest {
      * 同步执行示例
      */
     public void run() {
-        GeneralDelayedQueue delayedQueue1 = new GeneralDelayedQueue(
-                new TestConsumer1(), "1", "body", 1, 500, 50);
-        GeneralDelayedQueue delayedQueue2 = new GeneralDelayedQueue(
-                new TestConsumer1(), "2", "body", 3, 100, 100);
+//        GeneralDelayedQueue delayedQueue1 = new GeneralDelayedQueue(
+//                new TestConsumer1(), "1", "body", 1, 500, 50);
+//        GeneralDelayedQueue delayedQueue2 = new GeneralDelayedQueue(
+//                new TestConsumer1(), "2", "body", 3, 100, 100);
+//
         GeneralDelayedQueue delayedQueue3 = new GeneralDelayedQueue(
-                new TestConsumer1(), "3", "body", 3, 150, 150);
+                new TestConsumer1(), "3", "body", 8, 0, 50);
 
-        GeneralDelayedQueueExecute.run(delayedQueue1);
-        GeneralDelayedQueueExecute.run(delayedQueue2);
-        GeneralDelayedQueueExecute.run(delayedQueue3);
+//        GeneralDelayedQueueExecute.run(delayedQueue1);
+//        GeneralDelayedQueueExecute.run(delayedQueue2);
+        System.out.println(GeneralDelayedQueueExecute.run(delayedQueue3).isSuccess());
     }
 
     /**
@@ -96,10 +97,12 @@ public class GeneralDelayedQueueExecuteTest {
             String id = task.getId();
             int currExecuteNum = task.getCurrExecuteNum();
             logger.info("thread ->" + Thread.currentThread().getId() + " time ->" + System.currentTimeMillis() + " 消费延时队列 id -> " + id + " ,第 -> " + (currExecuteNum + 1) + " 次,body -> " + body);
-            if (task.getId().equals("3")) {
-                return GeneralResultVo.fail();
-            } else {
+
+            if (task.getId().equals("3") && task.getCurrExecuteNum() == 3) {
                 return GeneralResultVo.success("sss");
+            } else {
+                return GeneralResultVo.fail();
+
             }
         }
     }

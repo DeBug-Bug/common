@@ -224,7 +224,7 @@ public class GeneralDelayedQueueExecute {
                 task.setCurrExecuteNum(task.getCurrExecuteNum() + 1);
                 setExpireTime(task);
                 queue.offer(task);
-                execute(task);
+                result = execute(task);
             } else {
                 while ((countDownLatch.getCount()) > 0) {
                     countDownLatch.countDown();
