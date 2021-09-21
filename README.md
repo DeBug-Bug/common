@@ -8,7 +8,7 @@
  * @updateAuthor: lidongsheng
  * @updateData: 2021-01-01 11:41
  * @updateContent:
- * @Version: 最新版本 0.0.9
+ * @Version: 最新版本 1.0.2
  * @email: lidongshenglife@163.com
  * @blog: https://www.b0c0.com
  * @csdn: https://blog.csdn.net/LDSWAN0
@@ -36,7 +36,7 @@
 
 ### UPDATE LOG:
 
-#### 最新稳定版本：0.0.9
+#### 最新稳定版本：1.0.2
 
 #### 最新开发版本：0.1.0-SNAPSHOT
 
@@ -51,6 +51,8 @@
 * 异步执行结果通过Future获得  
 * 支持任务自定义顺序完成(流水线完成任务)
 
+#### 1.0.2:
+* 修复问题
 使用示例：
 ```
 public class GeneralDelayedQueueExecuteTest {
