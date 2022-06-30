@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- * @program: springbootdemo
+ * @program: common
  * @description: 通用延时队列实体
  * @author: lidongsheng
  * @createData: 2020-09-21 14:01

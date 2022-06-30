@@ -5,7 +5,7 @@ import com.b0c0.common.delayedQueue.GeneralDelayedQueue;
 import com.b0c0.common.domain.vo.GeneralResultVo;
 
 /**
- * @program: springbootdemo
+ * @program: common
  * @description: 通用延时队列消费
  * @author: lidongsheng
  * @createData: 2020-09-21 15:01

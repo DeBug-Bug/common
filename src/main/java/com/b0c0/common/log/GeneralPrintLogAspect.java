@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 
 
 /**
- * @program: springBootDemo
+ * @program: common
  * @description: AOP拦截切面类
  * @author: lidongsheng
  * @createData:

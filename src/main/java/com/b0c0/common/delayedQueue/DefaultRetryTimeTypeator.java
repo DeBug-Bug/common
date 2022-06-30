@@ -7,7 +7,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @program: springbootdemo
+ * @program: common
  * @description: 默认的重试时间实现接口
  * @author: lidongsheng
  * @createData: 2020-09-25 19:41

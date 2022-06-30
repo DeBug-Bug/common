@@ -3,7 +3,7 @@ package com.b0c0.common.delayedQueue.base;
 import com.b0c0.common.delayedQueue.GeneralDelayedQueue;
 
 /**
- * @program: springbootdemo
+ * @program: common
  * @description: 重试时间的type接口，自定义的重试时间实现此接口即可
  * @author: lidongsheng
  * @createData: 2020-09-25 19:07

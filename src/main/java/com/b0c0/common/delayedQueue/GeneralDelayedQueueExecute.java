@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 
 
 /**
- * @program: springbootdemo
+ * @program: common
  * @description: 通用延时队列执行器
  * @author: lidongsheng
  * @createData: 2020-09-21 15:50
