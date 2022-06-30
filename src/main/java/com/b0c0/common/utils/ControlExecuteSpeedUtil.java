@@ -4,6 +4,8 @@ package com.b0c0.common.utils;
 import com.b0c0.common.domain.bo.ControlExecuteSpeedBO;
 import com.b0c0.common.service.ControlExecuteSpeedService;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
@@ -73,6 +75,10 @@ public class ControlExecuteSpeedUtil {
             sendMqSpeedVar.getAndSet(0);
             controlExecuteSpeedBO.setBeginExecuteTime(System.currentTimeMillis());
         }
+    }
+
+    public static void main(String[] args) {
+        System.out.printf( "" + (1 & 0));
     }
 
 }

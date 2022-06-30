@@ -35,7 +35,7 @@ public @interface GeneralPrintLogAOP {
     String value() default "";
 
     /**
-     * 设置辞职控制日志的输出字符串个数
+     * 设置控制日志的输出字符串个数
      * @return
      */
     int maxLogLength() default 99999;
