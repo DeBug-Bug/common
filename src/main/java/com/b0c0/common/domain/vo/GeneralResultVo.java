@@ -8,7 +8,7 @@ package com.b0c0.common.domain.vo;
  * @updateAuthor: lidongsheng
  * @updateData: 2020-10-24 13:47
  * @updateContent: 延时队列执行结果
- * @Version: 0.0.8
+ * @Version: 1.0.0
  * @email: lidongshenglife@163.com
  * @blog: www.b0c0.com
  * ************************************************

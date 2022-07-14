@@ -14,7 +14,7 @@ import java.lang.annotation.Documented;
  * @updateAuthor:
  * @updateData:
  * @updateContent: 使用AOP注解拦截
- * @Version: 0.0.8
+ * @Version: 1.0.0
  * @email: lidongshenglife@163.com
  * @blog: https://www.b0c0.com
  * @csdn: https://blog.csdn.net/LDSWAN0
