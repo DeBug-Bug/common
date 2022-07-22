@@ -1,4 +1,4 @@
-package com.b0c0.common.log;
+package com.b0c0.common.logrecord;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,7 +6,7 @@ import java.util.Stack;
 
 /**
  * @program: common
- * @description: 存方法的变量
+ * @description: 操作日志记录上下文变量
  * @author: 李东升
  * @create: 2022-07-07 15:20
  */
@@ -15,6 +15,11 @@ public class LogRecordContext {
     private static final InheritableThreadLocal<Stack<Map<String, Object>>> variableMapStack = new InheritableThreadLocal<>();
 
 
+    /**
+     *
+     * @param key
+     * @param value
+     */
     public static void putVariable(String key, Object value){
         if(variableMapStack.get() == null) {
             variableMapStack.set(new Stack<>());

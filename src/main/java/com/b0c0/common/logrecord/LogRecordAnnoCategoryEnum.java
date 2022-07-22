@@ -1,4 +1,4 @@
-package com.b0c0.common.log;
+package com.b0c0.common.logrecord;
 
 /**
  * @program: springBootDemo
@@ -6,7 +6,7 @@ package com.b0c0.common.log;
  * @author: 李东升
  * @create: 2022-07-13 16:42
  */
-public enum LogAnnoCategoryEnum {
+public enum LogRecordAnnoCategoryEnum {
 
 
 

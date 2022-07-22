@@ -1,4 +1,4 @@
-package com.b0c0.common.log;
+package com.b0c0.common.logrecord;
 
 import java.lang.annotation.*;
 
@@ -11,7 +11,11 @@ import java.lang.annotation.*;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface LogParamAnno{
+public @interface LogRecordParamAnno {
 
+    /**
+     * 字段名称，记录拼接操作变更字符串的时候时候会拼接这个字段名称
+     * @return
+     */
     String value();
 }

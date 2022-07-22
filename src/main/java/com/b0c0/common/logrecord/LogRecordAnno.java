@@ -1,4 +1,4 @@
-package com.b0c0.common.log;
+package com.b0c0.common.logrecord;
 
 import java.lang.annotation.*;
 
@@ -11,7 +11,7 @@ import java.lang.annotation.*;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface LogAnno {
+public @interface LogRecordAnno {
 
     String message() default "修改了信息: ";
 
@@ -20,6 +20,12 @@ public @interface LogAnno {
      * @return
      */
     String oldExpression() default "";
+
+    /**
+     * 旧值的表达式 oldExpression 执行解析是否在业务方法执行之前
+     * @return
+     */
+    boolean oldExpressionExecBeforeFlag();
 
     /**
      * 新值的表达式 oldExpression和newExpression表达式返回值类型必须一致
@@ -40,14 +46,14 @@ public @interface LogAnno {
     String bizNo() default "";
 
     /**
-     * 操作日志种类 增删改查
+     * 操作日志种类 增 删 改 查 等，具体业务自定义
      * @return
      */
     String category() default "";
 
     /**
-     * 操作日志类型
+     * 操作日志类型 具体业务自定义
      * @return
      */
-    int type() default 0;
+    String type() default "";
 }

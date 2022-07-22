@@ -1,7 +1,7 @@
-package com.b0c0.common.log;
+package com.b0c0.common.logrecord;
 
+import com.b0c0.common.logrecord.LogRecordConfiguration;
 import org.springframework.context.annotation.Import;
-import org.springframework.scheduling.annotation.SchedulingConfiguration;
 
 import java.lang.annotation.*;
 
