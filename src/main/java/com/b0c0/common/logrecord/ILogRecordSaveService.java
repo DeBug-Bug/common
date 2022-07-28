@@ -12,8 +12,7 @@ public interface ILogRecordSaveService {
 
     /**
      * 保存log
-     * @param logContentList
-     * @param logRecordAnno 注解
+     * @param logRecordAnno
      */
-    void saveLog(List<StringBuilder> logContentList,LogRecordAnno logRecordAnno);
+    void saveLog(LogRecordResultBO logRecordAnno);
 }
