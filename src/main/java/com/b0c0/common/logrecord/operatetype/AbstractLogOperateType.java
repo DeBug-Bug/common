@@ -228,9 +228,8 @@ public abstract class AbstractLogOperateType {
 
                 changeObjectList.add(changeObject);
                 changeObjectMap.put(bizNo, changeObjectList);
-                // 新增、删除无需记录所有字段
-                Integer[] logOperaTypes = new Integer[]{LogOperaTypeEnum.ADD.getCode(), LogOperaTypeEnum.DELETE.getCode()};
-                if (Arrays.asList(logOperaTypes).contains(logRecordBO.getTypeCode())) {
+                // 判断无需记录所有字段
+                if (!isSaveAllField()) {
                     changeObject.setFieldOldO(null);
                     changeObject.setFieldNewO(null);
                     changeObject.setFieldName(null);
@@ -242,6 +241,12 @@ public abstract class AbstractLogOperateType {
             }
         }
     }
+
+    /**
+     * 是否记录所有字段、比如新增、删除无需记录所有字段，只需记录一条新增记录即可
+     * @return
+     */
+    protected abstract boolean isSaveAllField();
 
     /**
      * 是否需要记录操作日志,比对旧值和新值是否更改

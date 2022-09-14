@@ -73,6 +73,11 @@ public class LogOperateDeleteType extends AbstractLogOperateType{
         return LogRecordResultBO.getSuccessInstance(changeObjectMap);
     }
 
+    @Override
+    protected boolean isSaveAllField() {
+        return false;
+    }
+
 
     private void getBaseTypeResultBO(Map<String, List<LogRecordResultBO.ChangeObject>> changeObjectMap, LogRecordBO logRecordBO, Object oldObject, String bizNo, String companyId) {
 

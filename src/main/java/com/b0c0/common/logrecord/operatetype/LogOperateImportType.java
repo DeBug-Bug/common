@@ -46,4 +46,9 @@ public class LogOperateImportType extends AbstractLogOperateType {
 
     }
 
+    @Override
+    protected boolean isSaveAllField() {
+        return false;
+    }
+
 }

@@ -19,4 +19,8 @@ import org.springframework.stereotype.Service;
 @Service(LogRecordConst.LOG_OPERATE_TYPE + LogRecordConst.OPERATE_TYPE_ADD)
 public class LogOperateAddType extends AbstractLogOperateType{
 
+    @Override
+    protected boolean isSaveAllField() {
+        return false;
+    }
 }

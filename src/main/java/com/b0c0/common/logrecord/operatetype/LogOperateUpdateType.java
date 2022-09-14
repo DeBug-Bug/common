@@ -20,4 +20,8 @@ import static com.b0c0.common.logrecord.LogRecordConst.OPERATE_TYPE_UPDATE;
  */
 @Service(LogRecordConst.LOG_OPERATE_TYPE + OPERATE_TYPE_UPDATE)
 public class LogOperateUpdateType extends AbstractLogOperateType{
+    @Override
+    protected boolean isSaveAllField() {
+        return true;
+    }
 }

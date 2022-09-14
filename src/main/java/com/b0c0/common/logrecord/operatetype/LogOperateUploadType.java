@@ -46,4 +46,9 @@ public class LogOperateUploadType extends AbstractLogOperateType{
         return LogRecordResultBO.getSuccessInstance(changeObjectMap);
 
     }
+
+    @Override
+    protected boolean isSaveAllField() {
+        return false;
+    }
 }

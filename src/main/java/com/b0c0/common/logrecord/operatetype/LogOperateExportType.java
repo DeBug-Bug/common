@@ -18,4 +18,8 @@ import org.springframework.stereotype.Service;
  */
 @Service(LogRecordConst.LOG_OPERATE_TYPE + LogRecordConst.OPERATE_TYPE_EXPORT_FILE)
 public class LogOperateExportType extends AbstractLogOperateType{
+    @Override
+    protected boolean isSaveAllField() {
+        return false;
+    }
 }
