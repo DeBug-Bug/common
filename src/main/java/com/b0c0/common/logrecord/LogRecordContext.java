@@ -4,11 +4,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
+
 /**
  * @program: common
  * @description: 操作日志记录上下文变量
- * @author: 李东升
- * @create: 2022-07-07 15:20
+ * @author: lidongsheng
+ * @createData:  2022-08-05 19:29
+ * @updateAuthor: lidongsheng
+ * @updateData:
+ * @updateContent:
+ * @Version: 1.0.3
+ * @email: lidongshenglife@163.com
+ * @blog: https://www.b0c0.com
+ * @csdn: https://blog.csdn.net/LDSWAN0
  */
 public class LogRecordContext {
 
@@ -16,7 +24,7 @@ public class LogRecordContext {
 
 
     /**
-     *
+     * 设置上下文变量
      * @param key
      * @param value
      */
@@ -34,6 +42,7 @@ public class LogRecordContext {
         map.put(key, value);
         variableMapStack.get().push(map);
     }
+
 
     public static void putEmptySpan(){
         if(variableMapStack.get() == null) {
@@ -59,7 +68,7 @@ public class LogRecordContext {
     }
 
     public static void clear(){
-        variableMapStack.get().pop();
+        variableMapStack.remove();
     }
 
 
