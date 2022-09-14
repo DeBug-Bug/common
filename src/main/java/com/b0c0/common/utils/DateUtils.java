@@ -1,10 +1,5 @@
 package com.b0c0.common.utils;
 
-
-
-
-import com.sun.org.slf4j.internal.Logger;
-import com.sun.org.slf4j.internal.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 import java.sql.Timestamp;
@@ -24,8 +19,6 @@ import java.util.regex.Pattern;
  * @author zfc
  */
 public final class DateUtils {
-
-    private static final Logger log = LoggerFactory.getLogger(DateUtils.class);
 
     /**
      * 默认日期格式
@@ -130,7 +123,7 @@ public final class DateUtils {
             date = sdf.parse(str);
             return date;
         } catch (ParseException e) {
-            log.error("日期字符串解析异常", e);
+
         }
         return null;
     }

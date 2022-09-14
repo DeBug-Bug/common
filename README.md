@@ -189,6 +189,58 @@ public class GeneralDelayedQueueExecuteTest {
 }
 ```
 
+
+操作日志使用示例
+```
+    /**
+      * 新增公司注册信息
+     **/
+    @LogRecordAnno(newExpression = "#{#insertFicoCompanyRegInfoList}", moduleCode = LogRecordAnnoModuleEnum.COMPANY_BASE_INFO, moduleClassifyCode = LogRecordAnnoModuleClassifyEnum.COMPANY_REG_INFO)
+    @Override
+    public void insertCompanyRegInfo(List<FicoCompanyRegInfo> insertFicoCompanyRegInfoList) {
+        ficoCompanyRegInfoMapper.insertBatchSomeColumn(insertFicoCompanyRegInfoList);
+    }
+    
+    /**
+      * 新增公司基本信息
+     **/
+    @LogRecordAnno(newExpression = "#{#insertFicoCompanyInfo}", moduleCode = LogRecordAnnoModuleEnum.COMPANY_BASE_INFO)
+    @Override
+    public void insertCompanyInfo(FicoCompanyInfo insertFicoCompanyInfo) {
+        ficoCompanyInfoMapper.insert(insertFicoCompanyInfo);
+    }
+    
+    
+    LogRecordContext.putVariable("oldCompanyInfo", companyInfo);
+    /**
+      * 更新公司基本信息
+     **/
+    @LogRecordAnno(oldExpression = "#{#oldCompanyInfo}", newExpression = "#{#newCompanyInfo}", moduleCode = LogRecordAnnoModuleEnum.COMPANY_BASE_INFO)
+    @Override
+    public void updateCompanyInfo(FicoCompanyInfo newCompanyInfo) {
+        ficoCompanyInfoMapper.updateById(newCompanyInfo);
+    }
+    
+    
+    LogRecordContext.putVariable("oldUpdateCompanyRegInfoList", oldUpdateCompanyRegInfoList);
+    /**
+      * 批量更新公司基本信息
+     **/
+    @LogRecordAnno(oldExpression = "#{#oldUpdateCompanyRegInfoList}", newExpression = "#{#newUpdateCompanyRegInfoList}", moduleCode = LogRecordAnnoModuleEnum.COMPANY_BASE_INFO, moduleClassifyCode = LogRecordAnnoModuleClassifyEnum.COMPANY_REG_INFO, sortFiledName = "id")
+    @Override
+    public void updateCompanyRegInfo(List<FicoCompanyRegInfo> newUpdateCompanyRegInfoList) {
+       ....
+    }
+
+     /**
+      * 删除某公司下注册信息，但是操作日志记录的为业务id为公司id，只是细分类moduleClassify记为公司注册信息
+     **/
+    @LogRecordAnno(oldExpression = "#{#deleteCompanyId}", bizNoExpression = "#{#deleteCompanyId}", moduleCode = LogRecordAnnoModuleEnum.COMPANY_BASE_INFO, moduleClassifyCode = LogRecordAnnoModuleClassifyEnum.COMPANY_REG_INFO, type = LogOperaTypeEnum.DELETE)
+    @Override
+    public void delRegInfo(Set<String> idSet, String empName, String empNo, String deleteCompanyId) {
+       .....
+    }
+```
 # 常见问题说明
 
 ## 1. 无法拉取SNAPSHOT版本的问题
